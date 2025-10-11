@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Add Ownership - {{ owner.name }} - GPMP{% endblock %}
+{% block page_title %}Add Ownership for {{ owner.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold text-primary mb-1">Add Ownership</h2>
+                <p class="text-muted mb-0">Assign parcel ownership to {{ owner.name }}</p>
+            </div>
+            <a href="{{ url_for('owner.view_owner', owner_id=owner.owner_id) }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Owner
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-plus-circle me-2"></i>New Ownership Assignment
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if available_parcels %}
+                <form method="POST" class="needs-validation" novalidate>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="parcel_id" class="form-label">Select Parcel <span class="text-danger">*</span></label>
+                                <select class="form-select" id="parcel_id" name="parcel_id" required>
+                                    <option value="">Choose a parcel...</option>
+                                    {% for parcel in available_parcels %}
+                                    <option value="{{ parcel.parcel_id }}" data-area="{{ parcel.total_area }}" data-category="{{ parcel.land_category }}">
+                                        Survey No: {{ parcel.survey_no }} - {{ parcel.total_area }} acres ({{ parcel.land_category }})
+                                        {% if parcel.location %}
+                                        - {{ parcel.location.village }}
+                                        {% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select a parcel.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ownership_type" class="form-label">Ownership Type <span class="text-danger">*</span></label>
+                                <select class="form-select" id="ownership_type" name="ownership_type" required>
+                                    <option value="">Select type...</option>
+                                    <option value="Freehold">Freehold</option>
+                                    <option value="Leasehold">Leasehold</option>
+                                    <option value="Joint">Joint Ownership</option>
+                                    <option value="Inherited">Inherited</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select ownership type.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="share_fraction" class="form-label">Ownership Share <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="share_fraction" name="share_fraction" 
+                                           value="1.0" min="0.01" max="1.0" step="0.01" required>
+                                    <span class="input-group-text">
+                                        <span id="share_percentage">100%</span>
+                                    </span>
+                                </div>
+                                <div class="form-text">
+                                    Enter as decimal (1.0 = 100%, 0.5 = 50%, etc.)
+                                </div>
+                                <div class="invalid-feedback">
+                                    Please enter a valid share fraction.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="date_from" class="form-label">Ownership Start Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="date_from" name="date_from" 
+                                       value="{{ today }}" required>
+                                <div class="invalid-feedback">
+                                    Please select the ownership start date.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Parcel Details Preview -->
+                    <div id="parcel_preview" class="alert alert-info d-none">
+                        <h6><i class="bi bi-info-circle me-1"></i>Selected Parcel Details:</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>Area:</strong> <span id="preview_area">-</span> acres
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Category:</strong> <span id="preview_category">-</span>
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Your Share:</strong> <span id="preview_share">-</span> acres
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('owner.view_owner', owner_id=owner.owner_id) }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg me-1"></i>Add Ownership
+                        </button>
+                    </div>
+                </form>
+                
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-exclamation-triangle display-1 text-warning"></i>
+                    <h4 class="mt-3">No Available Parcels</h4>
+                    <p class="text-muted">{{ owner.name }} already owns all available parcels, or no parcels exist in the system.</p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('parcel.create_parcel') }}" class="btn btn-primary me-2">
+                            <i class="bi bi-plus-circle me-1"></i>Create New Parcel
+                        </a>
+                        <a href="{{ url_for('owner.view_owner', owner_id=owner.owner_id) }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Owner
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Update share percentage display
+document.getElementById('share_fraction').addEventListener('input', function() {
+    const fraction = parseFloat(this.value) || 0;
+    const percentage = Math.round(fraction * 100);
+    document.getElementById('share_percentage').textContent = percentage + '%';
+    updateParcelPreview();
+});
+
+// Show parcel details when selected
+document.getElementById('parcel_id').addEventListener('change', function() {
+    updateParcelPreview();
+});
+
+function updateParcelPreview() {
+    const parcelSelect = document.getElementById('parcel_id');
+    const selectedOption = parcelSelect.options[parcelSelect.selectedIndex];
+    const preview = document.getElementById('parcel_preview');
+    
+    if (selectedOption.value) {
+        const area = selectedOption.dataset.area;
+        const category = selectedOption.dataset.category;
+        const shareFraction = parseFloat(document.getElementById('share_fraction').value) || 0;
+        const shareArea = (parseFloat(area) * shareFraction).toFixed(2);
+        
+        document.getElementById('preview_area').textContent = area;
+        document.getElementById('preview_category').textContent = category;
+        document.getElementById('preview_share').textContent = shareArea;
+        
+        preview.classList.remove('d-none');
+    } else {
+        preview.classList.add('d-none');
+    }
+}
+
+// Date is already set from server-side template
+
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+{% endblock %}

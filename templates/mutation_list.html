@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Mutations - GPMP{% endblock %}
+{% block page_title %}Property Mutations{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="fw-bold text-primary mb-0">
+                <i class="bi bi-arrow-left-right me-2"></i>Property Mutations
+            </h2>
+            {% if current_user.role in ['Admin', 'Registrar'] %}
+            <a href="{{ url_for('mutation.create_mutation') }}" class="btn btn-primary">
+                <i class="bi bi-plus me-1"></i>Create Mutation
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Filter Options -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <form method="GET">
+            <select name="status" class="form-select" onchange="this.form.submit()">
+                <option value="">All Status</option>
+                <option value="Pending" {{ 'selected' if status_filter == 'Pending' else '' }}>Pending</option>
+                <option value="Approved" {{ 'selected' if status_filter == 'Approved' else '' }}>Approved</option>
+                <option value="Rejected" {{ 'selected' if status_filter == 'Rejected' else '' }}>Rejected</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<!-- Mutations Table -->
+<div class="card shadow">
+    <div class="card-body">
+        {% if mutations.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mutation ID</th>
+                        <th>Parcel</th>
+                        <th>Type</th>
+                        <th>From Owner</th>
+                        <th>To Owner</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mutation in mutations.items %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('mutation.view_mutation', mutation_id=mutation.mutation_id) }}" 
+                               class="text-decoration-none fw-semibold">
+                                #{{ mutation.mutation_id }}
+                            </a>
+                        </td>
+                        <td>{{ mutation.parcel.ulpin }}</td>
+                        <td>
+                            <span class="badge bg-info">{{ mutation.mutation_type }}</span>
+                        </td>
+                        <td>{{ mutation.from_owner.name }}</td>
+                        <td>{{ mutation.to_owner.name }}</td>
+                        <td>{{ mutation.date_of_mutation.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if mutation.status == 'Approved' else 'warning' if mutation.status == 'Pending' else 'danger' }}">
+                                {{ mutation.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('mutation.view_mutation', mutation_id=mutation.mutation_id) }}" 
+                                   class="btn btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if current_user.role in ['Admin', 'Approver'] and mutation.status == 'Pending' %}
+                                <form method="POST" action="{{ url_for('mutation.approve_mutation', mutation_id=mutation.mutation_id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-success" data-bs-toggle="tooltip" title="Approve">
+                                        <i class="bi bi-check"></i>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('mutation.reject_mutation', mutation_id=mutation.mutation_id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Reject">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if mutations.pages > 1 %}
+        <nav aria-label="Mutations pagination">
+            <ul class="pagination justify-content-center">
+                {% if mutations.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('mutation.list_mutations', page=mutations.prev_num, status=status_filter) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in mutations.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != mutations.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('mutation.list_mutations', page=page_num, status=status_filter) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if mutations.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('mutation.list_mutations', page=mutations.next_num, status=status_filter) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-arrow-left-right display-1 text-muted"></i>
+            <h4 class="mt-3">No mutations found</h4>
+            <p class="text-muted">
+                {% if status_filter %}
+                No mutations match your filter criteria.
+                {% else %}
+                Start by creating your first property mutation.
+                {% endif %}
+            </p>
+            {% if current_user.role in ['Admin', 'Registrar'] and not status_filter %}
+            <a href="{{ url_for('mutation.create_mutation') }}" class="btn btn-primary">
+                <i class="bi bi-plus me-1"></i>Create First Mutation
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

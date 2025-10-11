@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Owners - GPMP{% endblock %}
+{% block page_title %}Property Owners{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="fw-bold text-primary mb-0">
+                <i class="bi bi-people me-2"></i>Property Owners
+            </h2>
+            {% if current_user.role in ['Admin', 'Registrar'] %}
+            <a href="{{ url_for('owner.create_owner') }}" class="btn btn-primary">
+                <i class="bi bi-person-plus me-1"></i>Add New Owner
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Owners Table -->
+<div class="card shadow">
+    <div class="card-body">
+        {% if owners.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>PAN</th>
+                        <th>Contact</th>
+                        <th>Aadhaar</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for owner in owners.items %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                    {{ owner.name[0].upper() }}
+                                </div>
+                                <div>
+                                    <a href="{{ url_for('owner.view_owner', owner_id=owner.owner_id) }}" 
+                                       class="text-decoration-none fw-semibold">
+                                        {{ owner.name }}
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'primary' if owner.owner_type == 'Individual' else 'success' if owner.owner_type == 'Company' else 'warning' }}">
+                                {{ owner.owner_type }}
+                            </span>
+                        </td>
+                        <td>{{ owner.pan or 'N/A' }}</td>
+                        <td>{{ owner.contact_no or 'N/A' }}</td>
+                        <td>
+                            {% if owner.aadhaar_encrypted %}
+                                <span class="text-muted">{{ owner.get_masked_aadhaar() }}</span>
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('owner.view_owner', owner_id=owner.owner_id) }}" 
+                                   class="btn btn-outline-primary" data-bs-toggle="tooltip" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if current_user.role in ['Admin', 'Registrar'] %}
+                                <a href="{{ url_for('owner.edit_owner', owner_id=owner.owner_id) }}" 
+                                   class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if owners.pages > 1 %}
+        <nav aria-label="Owners pagination">
+            <ul class="pagination justify-content-center">
+                {% if owners.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('owner.list_owners', page=owners.prev_num) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in owners.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != owners.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('owner.list_owners', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if owners.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('owner.list_owners', page=owners.next_num) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-people display-1 text-muted"></i>
+            <h4 class="mt-3">No owners found</h4>
+            <p class="text-muted">Start by adding your first property owner to the system.</p>
+            {% if current_user.role in ['Admin', 'Registrar'] %}
+            <a href="{{ url_for('owner.create_owner') }}" class="btn btn-primary">
+                <i class="bi bi-person-plus me-1"></i>Add First Owner
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

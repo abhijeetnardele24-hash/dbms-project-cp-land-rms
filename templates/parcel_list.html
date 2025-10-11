@@ -1,0 +1,139 @@
+{% extends "layout.html" %}
+
+{% block title %}Parcels - LRMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Land Parcels</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        {% if current_user.role in ['Admin', 'Registrar'] %}
+        <a href="{{ url_for('parcel.create_parcel') }}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> Add New Parcel
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Search Form -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="GET" class="d-flex">
+            <input type="text" class="form-control me-2" name="search" placeholder="Search by ULPIN, Survey No, Village, District..." value="{{ search }}">
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+            {% if search %}
+            <a href="{{ url_for('parcel.list_parcels') }}" class="btn btn-outline-secondary ms-2">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Parcels Table -->
+<div class="card shadow">
+    <div class="card-body">
+        {% if parcels.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ULPIN</th>
+                        <th>Survey No</th>
+                        <th>Area (acres)</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                        <th>Current Use</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for parcel in parcels.items %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('parcel.view_parcel', parcel_id=parcel.parcel_id) }}" class="text-decoration-none">
+                                <strong>{{ parcel.ulpin }}</strong>
+                            </a>
+                        </td>
+                        <td>{{ parcel.survey_no }}</td>
+                        <td>{{ parcel.total_area }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if parcel.land_category == 'Agricultural' else 'primary' if parcel.land_category == 'Residential' else 'warning' if parcel.land_category == 'Commercial' else 'info' if parcel.land_category == 'Industrial' else 'secondary' }}">
+                                {{ parcel.land_category }}
+                            </span>
+                        </td>
+                        <td>{{ parcel.location.village }}, {{ parcel.location.district }}</td>
+                        <td>{{ parcel.current_use_type or 'N/A' }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('parcel.view_parcel', parcel_id=parcel.parcel_id) }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if current_user.role in ['Admin', 'Registrar'] %}
+                                <a href="{{ url_for('parcel.edit_parcel', parcel_id=parcel.parcel_id) }}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if parcels.pages > 1 %}
+        <nav aria-label="Parcels pagination">
+            <ul class="pagination justify-content-center">
+                {% if parcels.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('parcel.list_parcels', page=parcels.prev_num, search=search) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in parcels.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != parcels.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('parcel.list_parcels', page=page_num, search=search) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if parcels.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('parcel.list_parcels', page=parcels.next_num, search=search) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-geo-alt display-1 text-muted"></i>
+            <h4 class="mt-3">No parcels found</h4>
+            <p class="text-muted">
+                {% if search %}
+                No parcels match your search criteria.
+                {% else %}
+                Start by adding your first parcel to the system.
+                {% endif %}
+            </p>
+            {% if current_user.role in ['Admin', 'Registrar'] and not search %}
+            <a href="{{ url_for('parcel.create_parcel') }}" class="btn btn-primary">
+                <i class="bi bi-plus"></i> Add First Parcel
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

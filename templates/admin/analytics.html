@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - GPMP{% endblock %}
+{% block page_title %}System Analytics{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold text-primary mb-0">
+            <i class="bi bi-graph-up me-2"></i>System Analytics
+        </h2>
+    </div>
+</div>
+
+<!-- Overview Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="bi bi-geo-alt display-4 mb-2"></i>
+                <h3>{{ "{:,}".format(data.parcel.total_area) }}</h3>
+                <p class="mb-0">Total Area (sq ft)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card success">
+            <div class="card-body text-center">
+                <i class="bi bi-people display-4 mb-2"></i>
+                <h3>{{ data.ownership.total_ownerships }}</h3>
+                <p class="mb-0">Active Ownerships</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card warning">
+            <div class="card-body text-center">
+                <i class="bi bi-arrow-left-right display-4 mb-2"></i>
+                <h3>{{ data.mutation.total_mutations }}</h3>
+                <p class="mb-0">Total Mutations</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card danger">
+            <div class="card-body text-center">
+                <i class="bi bi-currency-rupee display-4 mb-2"></i>
+                <h3>₹{{ "{:,.0f}".format(data.tax.total_due) }}</h3>
+                <p class="mb-0">Total Tax Due</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">Land Category Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">Mutation Status</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="mutationChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Analytics -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">Parcel Analytics</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Average Area:</strong></td>
+                        <td>{{ "{:,.2f}".format(data.parcel.avg_area) }} sq ft</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Categories:</strong></td>
+                        <td>
+                            {% for category, count, area in data.parcel.category_distribution %}
+                            <span class="badge bg-primary me-1">{{ category }}: {{ count }}</span>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">Tax Collection</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Total Due:</strong></td>
+                        <td class="text-danger">₹{{ "{:,.2f}".format(data.tax.total_due) }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Collected:</strong></td>
+                        <td class="text-success">₹{{ "{:,.2f}".format(data.tax.total_collected) }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Collection Rate:</strong></td>
+                        <td>
+                            {% set rate = (data.tax.total_collected / data.tax.total_due * 100) if data.tax.total_due > 0 else 0 %}
+                            <span class="badge bg-{{ 'success' if rate > 80 else 'warning' if rate > 50 else 'danger' }}">
+                                {{ "{:.1f}".format(rate) }}%
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Land Category Chart
+const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+const categoryData = {
+    labels: [{% for category, count, area in data.parcel.category_distribution %}'{{ category }}'{{ ',' if not loop.last }}{% endfor %}],
+    datasets: [{
+        data: [{% for category, count, area in data.parcel.category_distribution %}{{ count }}{{ ',' if not loop.last }}{% endfor %}],
+        backgroundColor: [
+            '#FF6384',
+            '#36A2EB',
+            '#FFCE56',
+            '#4BC0C0',
+            '#9966FF'
+        ]
+    }]
+};
+
+new Chart(categoryCtx, {
+    type: 'doughnut',
+    data: categoryData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Mutation Status Chart
+const mutationCtx = document.getElementById('mutationChart').getContext('2d');
+const mutationData = {
+    labels: ['Approved', 'Pending', 'Rejected'],
+    datasets: [{
+        data: [
+            {{ data.mutation.approved_mutations }},
+            {{ data.mutation.pending_mutations }},
+            {{ data.mutation.rejected_mutations }}
+        ],
+        backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+    }]
+};
+
+new Chart(mutationCtx, {
+    type: 'pie',
+    data: mutationData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

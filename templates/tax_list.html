@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Tax Assessments - GPMP{% endblock %}
+{% block page_title %}Tax Assessments{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="fw-bold text-primary mb-0">
+                <i class="bi bi-receipt me-2"></i>Tax Assessments
+            </h2>
+            {% if current_user.role in ['Admin', 'Registrar'] %}
+            <a href="{{ url_for('tax.create_tax_assessment') }}" class="btn btn-primary">
+                <i class="bi bi-plus me-1"></i>Create Assessment
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Filter Options -->
+<div class="row mb-3">
+    <div class="col-md-3">
+        <form method="GET">
+            <select name="status" class="form-select" onchange="this.form.submit()">
+                <option value="">All Status</option>
+                <option value="Paid" {{ 'selected' if status_filter == 'Paid' else '' }}>Paid</option>
+                <option value="Unpaid" {{ 'selected' if status_filter == 'Unpaid' else '' }}>Unpaid</option>
+                <option value="Partial" {{ 'selected' if status_filter == 'Partial' else '' }}>Partial</option>
+            </select>
+            {% if year_filter %}
+            <input type="hidden" name="year" value="{{ year_filter }}">
+            {% endif %}
+        </form>
+    </div>
+    <div class="col-md-3">
+        <form method="GET">
+            <select name="year" class="form-select" onchange="this.form.submit()">
+                <option value="">All Years</option>
+                {% for year in years %}
+                <option value="{{ year }}" {{ 'selected' if year_filter == year|string else '' }}>{{ year }}</option>
+                {% endfor %}
+            </select>
+            {% if status_filter %}
+            <input type="hidden" name="status" value="{{ status_filter }}">
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Tax Assessments Table -->
+<div class="card shadow">
+    <div class="card-body">
+        {% if tax_assessments.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tax ID</th>
+                        <th>Parcel</th>
+                        <th>Year</th>
+                        <th>Assessed Value</th>
+                        <th>Tax Due</th>
+                        <th>Amount Paid</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tax in tax_assessments.items %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('tax.view_tax_assessment', tax_id=tax.tax_id) }}" 
+                               class="text-decoration-none fw-semibold">
+                                #{{ tax.tax_id }}
+                            </a>
+                        </td>
+                        <td>{{ tax.parcel.ulpin }}</td>
+                        <td><strong>{{ tax.assessment_year }}</strong></td>
+                        <td>₹{{ "{:,.0f}".format(tax.total_assessed_value) }}</td>
+                        <td>₹{{ "{:,.0f}".format(tax.tax_due) }}</td>
+                        <td>₹{{ "{:,.0f}".format(tax.amount_paid or 0) }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if tax.status == 'Paid' else 'warning' if tax.status == 'Partial' else 'danger' }}">
+                                {{ tax.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('tax.view_tax_assessment', tax_id=tax.tax_id) }}" 
+                                   class="btn btn-outline-primary" data-bs-toggle="tooltip" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if current_user.role in ['Admin', 'Registrar'] and tax.status != 'Paid' %}
+                                <a href="{{ url_for('tax.record_payment', tax_id=tax.tax_id) }}" 
+                                   class="btn btn-outline-success" data-bs-toggle="tooltip" title="Record Payment">
+                                    <i class="bi bi-credit-card"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if tax_assessments.pages > 1 %}
+        <nav aria-label="Tax assessments pagination">
+            <ul class="pagination justify-content-center">
+                {% if tax_assessments.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('tax.list_tax_assessments', page=tax_assessments.prev_num, status=status_filter, year=year_filter) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in tax_assessments.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != tax_assessments.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('tax.list_tax_assessments', page=page_num, status=status_filter, year=year_filter) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if tax_assessments.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('tax.list_tax_assessments', page=tax_assessments.next_num, status=status_filter, year=year_filter) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-receipt display-1 text-muted"></i>
+            <h4 class="mt-3">No tax assessments found</h4>
+            <p class="text-muted">
+                {% if status_filter or year_filter %}
+                No assessments match your filter criteria.
+                {% else %}
+                Start by creating your first tax assessment.
+                {% endif %}
+            </p>
+            {% if current_user.role in ['Admin', 'Registrar'] and not status_filter and not year_filter %}
+            <a href="{{ url_for('tax.create_tax_assessment') }}" class="btn btn-primary">
+                <i class="bi bi-plus me-1"></i>Create First Assessment
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Tax Summary -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>Tax Collection Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h4 class="text-primary">{{ tax_assessments.total }}</h4>
+                        <p class="text-muted mb-0">Total Assessments</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-success" id="totalDue">-</h4>
+                        <p class="text-muted mb-0">Total Due</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-warning" id="totalCollected">-</h4>
+                        <p class="text-muted mb-0">Total Collected</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-info" id="collectionRate">-</h4>
+                        <p class="text-muted mb-0">Collection Rate</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Load tax summary
+    fetch('{{ url_for("tax.tax_summary_api") }}')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalDue').textContent = '₹' + data.total_due.toLocaleString();
+            document.getElementById('totalCollected').textContent = '₹' + data.total_collected.toLocaleString();
+            document.getElementById('collectionRate').textContent = data.collection_rate.toFixed(1) + '%';
+        })
+        .catch(error => console.error('Error loading summary:', error));
+
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

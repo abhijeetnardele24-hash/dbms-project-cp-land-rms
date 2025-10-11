@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if owner else 'Create' }} Owner - GPMP{% endblock %}
+{% block page_title %}{{ 'Edit' if owner else 'Create New' }} Owner{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="fw-bold text-primary mb-0">{{ 'Edit' if owner else 'Create New' }} Owner</h2>
+            <a href="{{ url_for('owner.list_owners') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to List
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-plus me-2"></i>Owner Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="ownerForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       value="{{ owner.name if owner else '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="owner_type" class="form-label">Owner Type *</label>
+                                <select class="form-select" id="owner_type" name="owner_type" required>
+                                    <option value="">Select Type</option>
+                                    <option value="Individual" {{ 'selected' if owner and owner.owner_type == 'Individual' else '' }}>Individual</option>
+                                    <option value="Company" {{ 'selected' if owner and owner.owner_type == 'Company' else '' }}>Company</option>
+                                    <option value="Government" {{ 'selected' if owner and owner.owner_type == 'Government' else '' }}>Government</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="pan" class="form-label">PAN Number</label>
+                                <input type="text" class="form-control" id="pan" name="pan" 
+                                       value="{{ owner.pan if owner else '' }}" 
+                                       pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                                       placeholder="ABCDE1234F">
+                                <div class="form-text">Format: ABCDE1234F</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="aadhaar" class="form-label">Aadhaar Number</label>
+                                <input type="text" class="form-control" id="aadhaar" name="aadhaar_number" 
+                                       value="{{ owner.get_aadhaar() if owner and owner.aadhaar_encrypted else '' }}" 
+                                       pattern="[0-9]{12}"
+                                       placeholder="123456789012">
+                                <div class="form-text">12-digit Aadhaar number (will be encrypted)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="contact_no" class="form-label">Contact Number</label>
+                        <input type="tel" class="form-control" id="contact_no" name="contact_no" 
+                               value="{{ owner.contact_no if owner else '' }}" 
+                               pattern="[0-9]{10}"
+                               placeholder="9876543210">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="3" 
+                                  placeholder="Enter complete address">{{ owner.address if owner else '' }}</textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('owner.list_owners') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-{{ 'check' if owner else 'plus' }} me-1"></i>
+                            {{ 'Update' if owner else 'Create' }} Owner
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation
+    document.getElementById('ownerForm').addEventListener('submit', function(event) {
+        const form = event.target;
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+
+    // PAN validation
+    document.getElementById('pan').addEventListener('input', function(e) {
+        e.target.value = e.target.value.toUpperCase();
+    });
+
+    // Aadhaar validation
+    document.getElementById('aadhaar').addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '');
+        if (e.target.value.length > 12) {
+            e.target.value = e.target.value.slice(0, 12);
+        }
+    });
+
+    // Contact number validation
+    document.getElementById('contact_no').addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '');
+        if (e.target.value.length > 10) {
+            e.target.value = e.target.value.slice(0, 10);
+        }
+    });
+</script>
+{% endblock %}

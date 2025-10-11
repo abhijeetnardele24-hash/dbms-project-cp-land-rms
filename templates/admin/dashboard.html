@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - GPMP{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold text-primary mb-3">
+            <i class="bi bi-speedometer2 me-2"></i>System Overview
+        </h2>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Total Parcels</h6>
+                        <h3 class="mb-0 fw-bold">{{ data.total_parcels }}</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="bi bi-geo-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Total Owners</h6>
+                        <h3 class="mb-0 fw-bold">{{ data.total_owners }}</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="bi bi-people fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Pending Mutations</h6>
+                        <h3 class="mb-0 fw-bold">{{ data.pending_mutations }}</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="bi bi-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card stat-card danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">System Users</h6>
+                        <h3 class="mb-0 fw-bold">{{ data.total_users }}</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="bi bi-person-gear fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>Mutation Trends (Last 12 Months)
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="mutationTrendsChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-pie-chart me-2"></i>Land Categories
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="landCategoriesChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Location Statistics -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-map me-2"></i>District-wise Parcels
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if data.location_stats %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>District</th>
+                                <th>Parcel Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for location in data.location_stats %}
+                            <tr>
+                                <td>{{ location.district }}</td>
+                                <td>{{ location.parcel_count }}</td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {{ (location.parcel_count / data.total_parcels * 100) if data.total_parcels > 0 else 0 }}%">
+                                            {{ "%.1f"|format((location.parcel_count / data.total_parcels * 100) if data.total_parcels > 0 else 0) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No location data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-currency-rupee me-2"></i>Tax Collection Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if data.tax_stats %}
+                <div class="row text-center">
+                    <div class="col-4">
+                        <h4 class="text-primary">₹{{ "{:,.0f}"|format(data.tax_stats.total_due or 0) }}</h4>
+                        <p class="text-muted mb-0">Total Due</p>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-success">₹{{ "{:,.0f}"|format(data.tax_stats.total_collected or 0) }}</h4>
+                        <p class="text-muted mb-0">Collected</p>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-info">{{ "%.1f"|format(((data.tax_stats.total_collected or 0) / (data.tax_stats.total_due or 1)) * 100) }}%</h4>
+                        <p class="text-muted mb-0">Collection Rate</p>
+                    </div>
+                </div>
+                
+                <div class="progress mt-3" style="height: 25px;">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: {{ ((data.tax_stats.total_collected or 0) / (data.tax_stats.total_due or 1)) * 100 }}%">
+                        ₹{{ "{:,.0f}"|format(data.tax_stats.total_collected or 0) }} collected
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No tax data available for current year.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>Recent Mutations
+                </h5>
+                <a href="{{ url_for('mutation.list_mutations') }}" class="btn btn-light btn-sm">View All</a>
+            </div>
+            <div class="card-body">
+                {% if data.recent_mutations %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Parcel</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mutation in data.recent_mutations %}
+                            <tr>
+                                <td>{{ mutation.mutation_type }}</td>
+                                <td>
+                                    <a href="{{ url_for('parcel.view_parcel', parcel_id=mutation.parcel_id) }}" 
+                                       class="text-decoration-none">
+                                        {{ mutation.parcel.ulpin }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if mutation.status == 'Approved' else 'warning' if mutation.status == 'Pending' else 'danger' }}">
+                                        {{ mutation.status }}
+                                    </span>
+                                </td>
+                                <td>{{ mutation.date_of_mutation.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No recent mutations.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-journal-text me-2"></i>Recent Audit Logs
+                </h5>
+                <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-light btn-sm">View All</a>
+            </div>
+            <div class="card-body">
+                {% if data.recent_audit_logs %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Table</th>
+                                <th>Action</th>
+                                <th>User</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in data.recent_audit_logs %}
+                            <tr>
+                                <td>{{ log.table_name }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if log.action == 'INSERT' else 'warning' if log.action == 'UPDATE' else 'danger' }}">
+                                        {{ log.action }}
+                                    </span>
+                                </td>
+                                <td>{{ log.user.username if log.user else 'System' }}</td>
+                                <td>{{ log.timestamp.strftime('%H:%M') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No recent audit logs.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-person-plus me-2"></i>Manage Users
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('admin.analytics') }}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-graph-up me-2"></i>View Analytics
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-journal-text me-2"></i>Audit Logs
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('admin.system_info') }}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-info-circle me-2"></i>System Info
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Mutation Trends Chart
+    const mutationCtx = document.getElementById('mutationTrendsChart').getContext('2d');
+    const mutationData = {{ data.mutation_trends | tojson }};
+    
+    new Chart(mutationCtx, {
+        type: 'line',
+        data: {
+            labels: mutationData.map(item => item.month),
+            datasets: [{
+                label: 'Mutations',
+                data: mutationData.map(item => item.count),
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // Land Categories Pie Chart
+    const categoriesCtx = document.getElementById('landCategoriesChart').getContext('2d');
+    const categoryData = {{ data.category_stats | tojson }};
+    
+    new Chart(categoriesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: categoryData.map(item => item[0]),
+            datasets: [{
+                data: categoryData.map(item => item[1]),
+                backgroundColor: [
+                    '#27ae60',
+                    '#3498db',
+                    '#f39c12',
+                    '#e74c3c',
+                    '#9b59b6'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Auto-refresh data every 5 minutes
+    setInterval(() => {
+        location.reload();
+    }, 300000);
+</script>
+{% endblock %}

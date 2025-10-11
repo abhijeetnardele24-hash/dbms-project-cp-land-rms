@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Record Payment - GPMP{% endblock %}
+{% block page_title %}Record Tax Payment{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-cash me-2"></i>
+                    Record Payment for Assessment #{{ tax_assessment.tax_id }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Assessment Summary -->
+                <div class="alert alert-info">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>Tax Due:</strong><br>
+                            <span class="h5 text-danger">₹{{ "{:,.2f}".format(tax_assessment.tax_due) }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Paid:</strong><br>
+                            <span class="h5 text-success">₹{{ "{:,.2f}".format(tax_assessment.amount_paid or 0) }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Outstanding:</strong><br>
+                            <span class="h5 text-warning">₹{{ "{:,.2f}".format(tax_assessment.tax_due - (tax_assessment.amount_paid or 0)) }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Status:</strong><br>
+                            <span class="badge bg-{{ 'success' if tax_assessment.status == 'Paid' else 'warning' if tax_assessment.status == 'Partial' else 'danger' }} fs-6">
+                                {{ tax_assessment.status }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" class="needs-validation" novalidate>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="payment_amount" class="form-label">Payment Amount (₹) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="payment_amount" name="payment_amount" 
+                                       step="0.01" min="0.01" 
+                                       max="{{ tax_assessment.tax_due - (tax_assessment.amount_paid or 0) }}" 
+                                       required>
+                                <div class="invalid-feedback">
+                                    Please enter a valid payment amount.
+                                </div>
+                                <small class="form-text text-muted">
+                                    Maximum: ₹{{ "{:,.2f}".format(tax_assessment.tax_due - (tax_assessment.amount_paid or 0)) }}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="payment_date" class="form-label">Payment Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="payment_date" name="payment_date" 
+                                       value="{{ date.today() }}" required>
+                                <div class="invalid-feedback">
+                                    Please select a payment date.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="payment_method" class="form-label">Payment Method</label>
+                        <select class="form-select" id="payment_method" name="payment_method">
+                            <option value="Cash">Cash</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="Online Transfer">Online Transfer</option>
+                            <option value="Demand Draft">Demand Draft</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reference_number" class="form-label">Reference Number</label>
+                        <input type="text" class="form-control" id="reference_number" name="reference_number" 
+                               placeholder="Cheque number, transaction ID, etc.">
+                        <small class="form-text text-muted">
+                            Optional: Enter cheque number, transaction ID, or other reference
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="remarks" class="form-label">Remarks</label>
+                        <textarea class="form-control" id="remarks" name="remarks" rows="3" 
+                                  placeholder="Any additional notes about this payment"></textarea>
+                    </div>
+                    
+                    <!-- Payment Summary -->
+                    <div class="alert alert-light border">
+                        <h6>Payment Summary:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Current Payment:</strong> ₹<span id="current_payment">0.00</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>New Total Paid:</strong> ₹<span id="new_total">{{ "{:,.2f}".format(tax_assessment.amount_paid or 0) }}</span>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <strong>Remaining Balance:</strong> ₹<span id="remaining_balance">{{ "{:,.2f}".format(tax_assessment.tax_due - (tax_assessment.amount_paid or 0)) }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>New Status:</strong> <span id="new_status" class="badge bg-secondary">{{ tax_assessment.status }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('tax.view_tax_assessment', tax_id=tax_assessment.tax_id) }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg me-1"></i>Record Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const taxDue = {{ tax_assessment.tax_due }};
+    const currentPaid = {{ tax_assessment.amount_paid or 0 }};
+    
+    function updatePaymentSummary() {
+        const paymentAmount = parseFloat(document.getElementById('payment_amount').value) || 0;
+        const newTotal = currentPaid + paymentAmount;
+        const remainingBalance = taxDue - newTotal;
+        
+        document.getElementById('current_payment').textContent = paymentAmount.toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        
+        document.getElementById('new_total').textContent = newTotal.toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        
+        document.getElementById('remaining_balance').textContent = Math.max(0, remainingBalance).toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        
+        // Update status
+        let newStatus = 'Unpaid';
+        let statusClass = 'bg-danger';
+        
+        if (newTotal >= taxDue) {
+            newStatus = 'Paid';
+            statusClass = 'bg-success';
+        } else if (newTotal > 0) {
+            newStatus = 'Partial';
+            statusClass = 'bg-warning';
+        }
+        
+        const statusElement = document.getElementById('new_status');
+        statusElement.textContent = newStatus;
+        statusElement.className = `badge ${statusClass}`;
+    }
+    
+    // Add event listener for payment amount changes
+    document.getElementById('payment_amount').addEventListener('input', updatePaymentSummary);
+    
+    // Set default payment date to today
+    document.getElementById('payment_date').value = new Date().toISOString().split('T')[0];
+    
+    // Form validation
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+    
+    // Quick payment buttons
+    function setQuickPayment(amount) {
+        document.getElementById('payment_amount').value = amount;
+        updatePaymentSummary();
+    }
+    
+    // Add quick payment buttons after page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const outstanding = taxDue - currentPaid;
+        if (outstanding > 0) {
+            const paymentAmountDiv = document.getElementById('payment_amount').parentElement;
+            const quickButtonsDiv = document.createElement('div');
+            quickButtonsDiv.className = 'mt-2';
+            quickButtonsDiv.innerHTML = `
+                <small class="text-muted">Quick amounts:</small><br>
+                <button type="button" class="btn btn-outline-primary btn-sm me-1" onclick="setQuickPayment(${outstanding})">
+                    Full Amount
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm me-1" onclick="setQuickPayment(${(outstanding/2).toFixed(2)})">
+                    Half Amount
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setQuickPayment(1000)">
+                    ₹1,000
+                </button>
+            `;
+            paymentAmountDiv.appendChild(quickButtonsDiv);
+        }
+        
+        updatePaymentSummary();
+    });
+</script>
+{% endblock %}

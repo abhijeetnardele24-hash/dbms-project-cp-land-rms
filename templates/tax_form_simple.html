@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Create Tax Assessment - GPMP{% endblock %}
+{% block page_title %}Create Tax Assessment{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-receipt me-2"></i>
+                    Create Tax Assessment
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="parcel_id" class="form-label">Parcel <span class="text-danger">*</span></label>
+                                <select class="form-select" id="parcel_id" name="parcel_id" required>
+                                    <option value="">Select a parcel</option>
+                                    {% for parcel in parcels %}
+                                    <option value="{{ parcel.parcel_id }}">
+                                        {{ parcel.survey_no }} (ID: {{ parcel.parcel_id }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select a parcel.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="assessment_year" class="form-label">Assessment Year <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="assessment_year" name="assessment_year" 
+                                       value="{{ current_year }}" 
+                                       min="2000" max="2100" required>
+                                <div class="invalid-feedback">
+                                    Please enter a valid assessment year.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="land_value" class="form-label">Land Value (₹) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="land_value" name="land_value" 
+                                       step="0.01" min="0" required>
+                                <div class="invalid-feedback">
+                                    Please enter a valid land value.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="building_value" class="form-label">Building Value (₹)</label>
+                                <input type="number" class="form-control" id="building_value" name="building_value" 
+                                       value="0" step="0.01" min="0">
+                                <small class="form-text text-muted">Enter 0 if no building on the property</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tax_due" class="form-label">Tax Due (₹) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="tax_due" name="tax_due" 
+                                       step="0.01" min="0" required>
+                                <div class="invalid-feedback">
+                                    Please enter the tax amount due.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('tax.list_tax_assessments') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Back to List
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Create Assessment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-calculate tax (1% of land + building value)
+    function calculateTax() {
+        const landValue = parseFloat(document.getElementById('land_value').value) || 0;
+        const buildingValue = parseFloat(document.getElementById('building_value').value) || 0;
+        const total = landValue + buildingValue;
+        const taxDue = total * 0.01; // 1% tax rate
+        document.getElementById('tax_due').value = taxDue.toFixed(2);
+    }
+    
+    // Add event listeners
+    document.getElementById('land_value').addEventListener('input', calculateTax);
+    document.getElementById('building_value').addEventListener('input', calculateTax);
+    
+    // Form validation
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Tax Assessment Details - GPMP{% endblock %}
+{% block page_title %}Tax Assessment Details{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="fw-bold text-primary mb-0">
+                <i class="bi bi-receipt me-2"></i>Tax Assessment #{{ tax_assessment.tax_id }}
+            </h2>
+            <div>
+                {% if current_user.role in ['Admin', 'Registrar'] %}
+                <a href="{{ url_for('tax.record_payment', tax_id=tax_assessment.tax_id) }}" class="btn btn-success me-2">
+                    <i class="bi bi-cash me-1"></i>Record Payment
+                </a>
+                {% endif %}
+                <a href="{{ url_for('tax.list_tax_assessments') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Assessment Details Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Assessment Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td class="fw-bold">Assessment Year:</td>
+                                <td>{{ tax_assessment.assessment_year }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Parcel:</td>
+                                <td>
+                                    {% if tax_assessment.parcel %}
+                                    <a href="{{ url_for('parcel.view_parcel', parcel_id=tax_assessment.parcel.parcel_id) }}" 
+                                       class="text-decoration-none">
+                                        {{ tax_assessment.parcel.survey_number }}
+                                    </a>
+                                    {% else %}
+                                    N/A
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Land Value:</td>
+                                <td>₹{{ "{:,.2f}".format(tax_assessment.land_value) }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Building Value:</td>
+                                <td>₹{{ "{:,.2f}".format(tax_assessment.building_value or 0) }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td class="fw-bold">Total Assessed Value:</td>
+                                <td>₹{{ "{:,.2f}".format(tax_assessment.total_assessed_value) }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Tax Due:</td>
+                                <td class="text-danger fw-bold">₹{{ "{:,.2f}".format(tax_assessment.tax_due) }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Amount Paid:</td>
+                                <td class="text-success fw-bold">₹{{ "{:,.2f}".format(tax_assessment.amount_paid or 0) }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Outstanding:</td>
+                                <td class="text-warning fw-bold">
+                                    ₹{{ "{:,.2f}".format(tax_assessment.tax_due - (tax_assessment.amount_paid or 0)) }}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment History Card -->
+        {% if tax_assessment.amount_paid and tax_assessment.amount_paid > 0 %}
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Payment History</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ tax_assessment.paid_on.strftime('%d %b %Y') if tax_assessment.paid_on else 'N/A' }}</td>
+                                <td>₹{{ "{:,.2f}".format(tax_assessment.amount_paid) }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if tax_assessment.status == 'Paid' else 'warning' if tax_assessment.status == 'Partial' else 'danger' }}">
+                                        {{ tax_assessment.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Status Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-{{ 'success' if tax_assessment.status == 'Paid' else 'warning' if tax_assessment.status == 'Partial' else 'danger' }} text-white">
+                <h5 class="mb-0">Payment Status</h5>
+            </div>
+            <div class="card-body text-center">
+                <i class="bi bi-{{ 'check-circle' if tax_assessment.status == 'Paid' else 'clock' if tax_assessment.status == 'Partial' else 'x-circle' }} display-1 text-{{ 'success' if tax_assessment.status == 'Paid' else 'warning' if tax_assessment.status == 'Partial' else 'danger' }}"></i>
+                <h3 class="mt-3 text-{{ 'success' if tax_assessment.status == 'Paid' else 'warning' if tax_assessment.status == 'Partial' else 'danger' }}">
+                    {{ tax_assessment.status }}
+                </h3>
+                {% if tax_assessment.status == 'Paid' %}
+                <p class="text-muted">All taxes have been paid for this assessment.</p>
+                {% elif tax_assessment.status == 'Partial' %}
+                <p class="text-muted">Partial payment received. Outstanding balance remains.</p>
+                {% else %}
+                <p class="text-muted">No payments received for this assessment.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        {% if current_user.role in ['Admin', 'Registrar'] and tax_assessment.status != 'Paid' %}
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('tax.record_payment', tax_id=tax_assessment.tax_id) }}" class="btn btn-success">
+                        <i class="bi bi-cash me-1"></i>Record Payment
+                    </a>
+                    <button class="btn btn-outline-primary" onclick="printAssessment()">
+                        <i class="bi bi-printer me-1"></i>Print Assessment
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="sendReminder()">
+                        <i class="bi bi-envelope me-1"></i>Send Reminder
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function printAssessment() {
+        window.print();
+    }
+    
+    function sendReminder() {
+        alert('Reminder functionality will be implemented soon.');
+    }
+</script>
+{% endblock %}
