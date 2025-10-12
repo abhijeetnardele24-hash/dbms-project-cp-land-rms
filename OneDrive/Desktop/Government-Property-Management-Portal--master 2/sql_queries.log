@@ -1,0 +1,455 @@
+2025-10-12 13:04:39,452 - INFO - Query #1 started: DESCRIBE `government_property_portal`.`owner`...
+2025-10-12 13:04:39,504 - INFO - Query #1 completed in 51.28ms
+2025-10-12 13:04:39,504 - INFO - Query #2 started: DESCRIBE `government_property_portal`.`user_account`...
+2025-10-12 13:04:39,507 - INFO - Query #2 completed in 2.37ms
+2025-10-12 13:04:39,507 - INFO - Query #3 started: DESCRIBE `government_property_portal`.`location`...
+2025-10-12 13:04:39,509 - INFO - Query #3 completed in 1.86ms
+2025-10-12 13:04:39,510 - INFO - Query #4 started: DESCRIBE `government_property_portal`.`parcel`...
+2025-10-12 13:04:39,512 - INFO - Query #4 completed in 2.62ms
+2025-10-12 13:04:39,513 - INFO - Query #5 started: DESCRIBE `government_property_portal`.`parcel_version`...
+2025-10-12 13:04:39,515 - INFO - Query #5 completed in 2.22ms
+2025-10-12 13:04:39,516 - INFO - Query #6 started: DESCRIBE `government_property_portal`.`ownership`...
+2025-10-12 13:04:39,518 - INFO - Query #6 completed in 1.93ms
+2025-10-12 13:04:39,518 - INFO - Query #7 started: DESCRIBE `government_property_portal`.`tenant_agreement`...
+2025-10-12 13:04:39,521 - INFO - Query #7 completed in 2.08ms
+2025-10-12 13:04:39,521 - INFO - Query #8 started: DESCRIBE `government_property_portal`.`mutation`...
+2025-10-12 13:04:39,523 - INFO - Query #8 completed in 1.93ms
+2025-10-12 13:04:39,524 - INFO - Query #9 started: DESCRIBE `government_property_portal`.`document`...
+2025-10-12 13:04:39,525 - INFO - Query #9 completed in 1.81ms
+2025-10-12 13:04:39,526 - INFO - Query #10 started: DESCRIBE `government_property_portal`.`encumbrance`...
+2025-10-12 13:04:39,529 - INFO - Query #10 completed in 2.89ms
+2025-10-12 13:04:39,530 - INFO - Query #11 started: DESCRIBE `government_property_portal`.`tax_assessment`...
+2025-10-12 13:04:39,532 - INFO - Query #11 completed in 2.37ms
+2025-10-12 13:04:39,533 - INFO - Query #12 started: DESCRIBE `government_property_portal`.`audit_log`...
+2025-10-12 13:04:39,536 - INFO - Query #12 completed in 3.05ms
+2025-10-12 13:04:39,536 - INFO - Query #13 started: DESCRIBE `government_property_portal`.`grievance`...
+2025-10-12 13:04:39,539 - INFO - Query #13 completed in 2.21ms
+2025-10-12 13:04:39,539 - INFO - Query #14 started: DESCRIBE `government_property_portal`.`system_config`...
+2025-10-12 13:04:39,542 - INFO - Query #14 completed in 2.45ms
+2025-10-12 13:04:39,911 - INFO - Query #15 started: SELECT user_account.user_id AS user_account_user_id, user_account.username AS user_account_username,...
+2025-10-12 13:04:39,911 - INFO - Parameters: {'username_1': 'admin', 'param_1': 1}
+2025-10-12 13:04:39,916 - INFO - Query #15 completed in 5.08ms
+2025-10-12 13:04:39,918 - INFO - Query #16 started: SELECT user_account.user_id AS user_account_user_id, user_account.username AS user_account_username,...
+2025-10-12 13:04:39,918 - INFO - Parameters: {'username_1': 'registrar', 'param_1': 1}
+2025-10-12 13:04:39,920 - INFO - Query #16 completed in 2.46ms
+2025-10-12 13:04:39,921 - INFO - Query #17 started: SELECT user_account.user_id AS user_account_user_id, user_account.username AS user_account_username,...
+2025-10-12 13:04:39,922 - INFO - Parameters: {'username_1': 'approver', 'param_1': 1}
+2025-10-12 13:04:39,924 - INFO - Query #17 completed in 2.83ms
+2025-10-12 13:04:39,925 - INFO - Query #18 started: SELECT user_account.user_id AS user_account_user_id, user_account.username AS user_account_username,...
+2025-10-12 13:04:39,926 - INFO - Parameters: {'username_1': 'citizen', 'param_1': 1}
+2025-10-12 13:04:39,928 - INFO - Query #18 completed in 2.68ms
+2025-10-12 13:04:41,211 - INFO - Query #1 started: DESCRIBE `government_property_portal`.`owner`...
+2025-10-12 13:04:41,217 - INFO - Query #1 completed in 6.31ms
+2025-10-12 13:04:41,218 - INFO - Query #2 started: DESCRIBE `government_property_portal`.`user_account`...
+2025-10-12 13:04:41,222 - INFO - Query #2 completed in 3.20ms
+2025-10-12 13:04:41,222 - INFO - Query #3 started: DESCRIBE `government_property_portal`.`location`...
+2025-10-12 13:04:41,225 - INFO - Query #3 completed in 2.54ms
+2025-10-12 13:04:41,226 - INFO - Query #4 started: DESCRIBE `government_property_portal`.`parcel`...
+2025-10-12 13:04:41,229 - INFO - Query #4 completed in 3.16ms
+2025-10-12 13:04:41,230 - INFO - Query #5 started: DESCRIBE `government_property_portal`.`parcel_version`...
+2025-10-12 13:04:41,233 - INFO - Query #5 completed in 3.30ms
+2025-10-12 13:04:41,234 - INFO - Query #6 started: DESCRIBE `government_property_portal`.`ownership`...
+2025-10-12 13:04:41,238 - INFO - Query #6 completed in 3.56ms
+2025-10-12 13:04:41,239 - INFO - Query #7 started: DESCRIBE `government_property_portal`.`tenant_agreement`...
+2025-10-12 13:04:41,241 - INFO - Query #7 completed in 2.44ms
+2025-10-12 13:04:41,242 - INFO - Query #8 started: DESCRIBE `government_property_portal`.`mutation`...
+2025-10-12 13:04:41,245 - INFO - Query #8 completed in 2.97ms
+2025-10-12 13:04:41,246 - INFO - Query #9 started: DESCRIBE `government_property_portal`.`document`...
+2025-10-12 13:04:41,250 - INFO - Query #9 completed in 3.70ms
+2025-10-12 13:04:41,250 - INFO - Query #10 started: DESCRIBE `government_property_portal`.`encumbrance`...
+2025-10-12 13:04:41,254 - INFO - Query #10 completed in 3.19ms
+2025-10-12 13:04:41,254 - INFO - Query #11 started: DESCRIBE `government_property_portal`.`tax_assessment`...
+2025-10-12 13:04:41,258 - INFO - Query #11 completed in 3.18ms
+2025-10-12 13:04:41,259 - INFO - Query #12 started: DESCRIBE `government_property_portal`.`audit_log`...
+2025-10-12 13:04:41,262 - INFO - Query #12 completed in 3.25ms
+2025-10-12 13:04:41,263 - INFO - Query #13 started: DESCRIBE `government_property_portal`.`grievance`...
+2025-10-12 13:04:41,267 - INFO - Query #13 completed in 3.71ms
+2025-10-12 13:04:41,268 - INFO - Query #14 started: DESCRIBE `government_property_portal`.`system_config`...
+2025-10-12 13:04:41,271 - INFO - Query #14 completed in 3.15ms
+2025-10-12 13:04:41,690 - INFO - Query #15 started: SELECT user_account.user_id AS user_account_user_id, user_account.username AS user_account_username,...
+2025-10-12 13:04:41,690 - INFO - Parameters: {'username_1': 'admin', 'param_1': 1}
+2025-10-12 13:04:41,693 - INFO - Query #15 completed in 2.68ms
+2025-10-12 13:04:41,694 - INFO - Query #16 started: SELECT user_account.user_id AS user_account_user_id, user_account.username AS user_account_username,...
+2025-10-12 13:04:41,695 - INFO - Parameters: {'username_1': 'registrar', 'param_1': 1}
+2025-10-12 13:04:41,697 - INFO - Query #16 completed in 2.92ms
+2025-10-12 13:04:41,699 - INFO - Query #17 started: SELECT user_account.user_id AS user_account_user_id, user_account.username AS user_account_username,...
+2025-10-12 13:04:41,699 - INFO - Parameters: {'username_1': 'approver', 'param_1': 1}
+2025-10-12 13:04:41,702 - INFO - Query #17 completed in 2.82ms
+2025-10-12 13:04:41,703 - INFO - Query #18 started: SELECT user_account.user_id AS user_account_user_id, user_account.username AS user_account_username,...
+2025-10-12 13:04:41,703 - INFO - Parameters: {'username_1': 'citizen', 'param_1': 1}
+2025-10-12 13:04:41,705 - INFO - Query #18 completed in 2.61ms
+2025-10-12 13:06:42,398 - INFO - Query #1 started: DESCRIBE `government_property_portal`.`owner`...
+2025-10-12 13:06:42,405 - INFO - Query #1 completed in 6.14ms
+2025-10-12 13:06:42,405 - INFO - Query #2 started: DESCRIBE `government_property_portal`.`user_account`...
+2025-10-12 13:06:42,408 - INFO - Query #2 completed in 2.64ms
+2025-10-12 13:06:42,408 - INFO - Query #3 started: DESCRIBE `government_property_portal`.`location`...
+2025-10-12 13:06:42,411 - INFO - Query #3 completed in 2.70ms
+2025-10-12 13:06:42,412 - INFO - Query #4 started: DESCRIBE `government_property_portal`.`parcel`...
+2025-10-12 13:06:42,415 - INFO - Query #4 completed in 2.61ms
+2025-10-12 13:06:42,415 - INFO - Query #5 started: DESCRIBE `government_property_portal`.`parcel_version`...
+2025-10-12 13:06:42,417 - INFO - Query #5 completed in 1.91ms
+2025-10-12 13:06:42,418 - INFO - Query #6 started: DESCRIBE `government_property_portal`.`ownership`...
+2025-10-12 13:06:42,420 - INFO - Query #6 completed in 2.43ms
+2025-10-12 13:06:42,421 - INFO - Query #7 started: DESCRIBE `government_property_portal`.`tenant_agreement`...
+2025-10-12 13:06:42,423 - INFO - Query #7 completed in 2.08ms
+2025-10-12 13:06:42,424 - INFO - Query #8 started: DESCRIBE `government_property_portal`.`mutation`...
+2025-10-12 13:06:42,427 - INFO - Query #8 completed in 3.06ms
+2025-10-12 13:06:42,427 - INFO - Query #9 started: DESCRIBE `government_property_portal`.`document`...
+2025-10-12 13:06:42,430 - INFO - Query #9 completed in 2.27ms
+2025-10-12 13:06:42,431 - INFO - Query #10 started: DESCRIBE `government_property_portal`.`encumbrance`...
+2025-10-12 13:06:42,433 - INFO - Query #10 completed in 2.51ms
+2025-10-12 13:06:42,434 - INFO - Query #11 started: DESCRIBE `government_property_portal`.`tax_assessment`...
+2025-10-12 13:06:42,435 - INFO - Query #11 completed in 1.75ms
+2025-10-12 13:06:42,436 - INFO - Query #12 started: DESCRIBE `government_property_portal`.`audit_log`...
+2025-10-12 13:06:42,439 - INFO - Query #12 completed in 2.38ms
+2025-10-12 13:06:42,440 - INFO - Query #13 started: DESCRIBE `government_property_portal`.`grievance`...
+2025-10-12 13:06:42,442 - INFO - Query #13 completed in 2.05ms
+2025-10-12 13:06:42,442 - INFO - Query #14 started: DESCRIBE `government_property_portal`.`system_config`...
+2025-10-12 13:06:42,444 - INFO - Query #14 completed in 1.90ms
+2025-10-12 13:06:42,448 - INFO - Custom operation: Creating Stored Procedures
+2025-10-12 13:06:42,448 - INFO - Details: Advanced procedures for property management
+2025-10-12 13:06:42,451 - INFO - Query #15 started: -- MySQL Stored Procedures for Government Property Management Portal
+-- Government Property Manageme...
+2025-10-12 13:06:42,459 - ERROR - Query #15 failed: (1064, "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'DROP PROCEDURE IF EXISTS BulkTaxAssessment;\nDROP PROCEDURE IF EXISTS ProcessMuta' at line 7")
+2025-10-12 13:06:42,459 - ERROR - Statement: -- MySQL Stored Procedures for Government Property Management Portal
+-- Government Property Management Portal
+
+USE property_portal;
+
+-- Drop existing procedures if they exist
+DROP PROCEDURE IF EXISTS BulkTaxAssessment;
+DROP PROCEDURE IF EXISTS ProcessMutation;
+DROP PROCEDURE IF EXISTS BulkMutationApproval;
+DROP PROCEDURE IF EXISTS CalculatePropertyTax;
+DROP PROCEDURE IF EXISTS GenerateTaxReport;
+DROP PROCEDURE IF EXISTS UpdateParcelStatus;
+DROP PROCEDURE IF EXISTS AuditTrailReport;
+
+
+
+-- Procedure for bulk tax assessment
+CREATE PROCEDURE BulkTaxAssessment(
+    IN assessment_year_param INT,
+    IN user_id_param INT
+)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE parcel_id_var INT;
+    DECLARE land_value_var DECIMAL(15,2);
+    DECLARE building_value_var DECIMAL(15,2);
+    DECLARE total_area_var DECIMAL(10,2);
+    DECLARE land_category_var VARCHAR(50);
+    DECLARE tax_rate_var DECIMAL(5,4);
+
+    DECLARE cur CURSOR FOR
+        SELECT p.parcel_id, p.total_area, p.land_category
+        FROM parcel p
+        WHERE NOT EXISTS (
+            SELECT 1 FROM tax_assessment ta
+            WHERE ta.parcel_id = p.parcel_id
+            AND ta.assessment_year = assessment_year_param
+        );
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN cur;
+
+    read_loop: LOOP
+        FETCH cur INTO parcel_id_var, total_area_var, land_category_var;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Calculate land value based on category and area
+        CASE land_category_var
+            WHEN 'Residential' THEN SET land_value_var = total_area_var * 5000;
+            WHEN 'Commercial' THEN SET land_value_var = total_area_var * 15000;
+            WHEN 'Industrial' THEN SET land_value_var = total_area_var * 8000;
+            WHEN 'Agricultural' THEN SET land_value_var = total_area_var * 2000;
+            ELSE SET land_value_var = total_area_var * 3000;
+        END CASE;
+
+        -- Assume building value is 20%% of land value for simplicity
+        SET building_value_var = land_value_var * 0.2;
+
+        -- Calculate tax rate based on total value
+        IF (land_value_var + building_value_var) > 10000000 THEN
+            SET tax_rate_var = 0.08;
+        ELSEIF (land_value_var + building_value_var) > 5000000 THEN
+            SET tax_rate_var = 0.06;
+        ELSE
+            SET tax_rate_var = 0.04;
+        END IF;
+
+        -- Insert tax assessment
+        INSERT INTO tax_assessment (
+            parcel_id,
+            assessment_year,
+            land_value,
+            building_value,
+            total_assessed_value,
+            tax_due,
+            payment_status,
+            created_at
+        ) VALUES (
+            parcel_id_var,
+            assessment_year_param,
+            land_value_var,
+            building_value_var,
+            land_value_var + building_value_var,
+            (land_value_var + building_value_var) * tax_rate_var,
+            'Pending',
+            NOW()
+        );
+
+        -- Log the action
+        INSERT INTO audit_log (table_name, record_pk_value, action, user_id, timestamp, new_values)
+        VALUES (
+            'tax_assessment',
+            LAST_INSERT_ID(),
+            'INSERT',
+            user_id_param,
+            NOW(),
+            JSON_OBJECT(
+                'parcel_id', parcel_id_var,
+                'assessment_year', assessment_year_param,
+                'tax_due', (land_value_var + building_value_var) * tax_rate_var
+            )
+        );
+
+    END LOOP;
+
+    CLOSE cur;
+
+    SELECT CONCAT('Bulk tax assessment completed for year ', assessment_year_param) AS result;
+END$$
+
+-- Procedure for processing mutation
+CREATE PROCEDURE ProcessMutation(
+    IN mutation_id_param INT,
+    IN user_id_param INT
+)
+BEGIN
+    DECLARE parcel_id_var INT;
+    DECLARE from_owner_var INT;
+    DECLARE to_owner_var INT;
+    DECLARE mutation_type_var VARCHAR(50);
+    DECLARE consideration_var DECIMAL(15,2);
+    DECLARE status_var VARCHAR(20);
+
+    -- Get mutation details
+    SELECT parcel_id, from_owner_id, to_owner_id, mutation_type, consideration_value, status
+    INTO parcel_id_var, from_owner_var, to_owner_var, mutation_type_var, consideration_var, status_var
+    FROM mutation
+    WHERE mutation_id = mutation_id_param;
+
+    IF status_var != 'Approved' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Mutation must be approved before processing';
+    END IF;
+
+    -- Update ownership records
+    -- Transfer ownership
+    UPDATE ownership
+    SET date_to = CURDATE()
+    WHERE parcel_id = parcel_id_var
+    AND owner_id = from_owner_var
+    AND date_to IS NULL;
+
+    INSERT INTO ownership (
+        parcel_id,
+        owner_id,
+        share_fraction,
+        ownership_type,
+        date_from,
+        created_at
+    ) VALUES (
+        parcel_id_var,
+        to_owner_var,
+        1.0,
+        mutation_type_var,
+        CURDATE(),
+        NOW()
+    );
+
+    -- Update mutation status
+    UPDATE mutation
+    SET status = 'Processed', processed_at = NOW(), processed_by = user_id_param
+    WHERE mutation_id = mutation_id_param;
+
+    -- Log the processing
+    INSERT INTO audit_log (table_name, record_pk_value, action, user_id, timestamp, new_values)
+    VALUES (
+        'mutation',
+        mutation_id_param,
+        'UPDATE',
+        user_id_param,
+        NOW(),
+        JSON_OBJECT('status', 'Processed', 'processed_at', NOW())
+    );
+
+    SELECT 'Mutation processed successfully' AS result;
+END$$
+
+-- Procedure for bulk mutation approval
+CREATE PROCEDURE BulkMutationApproval(
+    IN mutation_ids JSON,
+    IN user_id_param INT
+)
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    DECLARE mutation_id_var INT;
+    DECLARE array_length INT;
+
+    SET array_length = JSON_LENGTH(mutation_ids);
+
+    WHILE i < array_length DO
+        SET mutation_id_var = JSON_EXTRACT(mutation_ids, CONCAT('$[', i, ']'));
+
+        -- Approve the mutation
+        UPDATE mutation
+        SET status = 'Approved', approved_by = user_id_param, approved_on = NOW(), status_changed_at = NOW()
+        WHERE mutation_id = mutation_id_var
+        AND status = 'Pending';
+
+        -- Log the approval
+        INSERT INTO audit_log (table_name, record_pk_value, action, user_id, timestamp, new_values)
+        VALUES (
+            'mutation',
+            mutation_id_var,
+            'UPDATE',
+            user_id_param,
+            NOW(),
+            JSON_OBJECT('status', 'Approved', 'approved_on', NOW())
+        );
+
+        SET i = i + 1;
+    END WHILE;
+
+    SELECT CONCAT('Approved ', array_length, ' mutations') AS result;
+END$$
+
+-- Function to calculate property tax
+CREATE FUNCTION CalculatePropertyTax(
+    parcel_id_param INT,
+    assessment_year_param INT
+) RETURNS DECIMAL(15,2)
+DETERMINISTIC
+READS SQL DATA
+BEGIN
+    DECLARE land_value DECIMAL(15,2) DEFAULT 0;
+    DECLARE building_value DECIMAL(15,2) DEFAULT 0;
+    DECLARE total_value DECIMAL(15,2) DEFAULT 0;
+    DECLARE tax_rate DECIMAL(5,4) DEFAULT 0.04;
+    DECLARE tax_amount DECIMAL(15,2) DEFAULT 0;
+
+    -- Get assessed values
+    SELECT land_value, building_value, total_assessed_value
+    INTO land_value, building_value, total_value
+    FROM tax_assessment
+    WHERE parcel_id = parcel_id_param
+    AND assessment_year = assessment_year_param;
+
+    IF total_value IS NULL THEN
+        RETURN 0;
+    END IF;
+
+    -- Determine tax rate based on value
+    IF total_value > 10000000 THEN
+        SET tax_rate = 0.08;
+    ELSEIF total_value > 5000000 THEN
+        SET tax_rate = 0.06;
+    ELSE
+        SET tax_rate = 0.04;
+    END IF;
+
+    SET tax_amount = total_value * tax_rate;
+
+    RETURN tax_amount;
+END$$
+
+-- Procedure to generate tax report
+CREATE PROCEDURE GenerateTaxReport(
+    IN start_date_param DATE,
+    IN end_date_param DATE
+)
+BEGIN
+    SELECT
+        ta.assessment_year,
+        COUNT(*) as total_assessments,
+        SUM(ta.tax_due) as total_tax_due,
+        SUM(ta.amount_paid) as total_paid,
+        SUM(ta.tax_due - ta.amount_paid) as total_pending,
+        AVG(ta.tax_due) as avg_tax_per_property
+    FROM tax_assessment ta
+    WHERE ta.created_at BETWEEN start_date_param AND end_date_param
+    GROUP BY ta.assessment_year
+    ORDER BY ta.assessment_year DESC;
+END$$
+
+-- Procedure to update parcel status
+CREATE PROCEDURE UpdateParcelStatus(
+    IN parcel_id_param INT,
+    IN new_status_param VARCHAR(20),
+    IN user_id_param INT
+)
+BEGIN
+    DECLARE old_status VARCHAR(20);
+
+    -- Get current status
+    SELECT current_use_type INTO old_status
+    FROM parcel
+    WHERE parcel_id = parcel_id_param;
+
+    -- Update status
+    UPDATE parcel
+    SET current_use_type = new_status_param, updated_at = NOW()
+    WHERE parcel_id = parcel_id_param;
+
+    -- Log the change
+    INSERT INTO audit_log (table_name, record_pk_value, action, user_id, timestamp, old_values, new_values)
+    VALUES (
+        'parcel',
+        parcel_id_param,
+        'UPDATE',
+        user_id_param,
+        NOW(),
+        JSON_OBJECT('current_use_type', old_status),
+        JSON_OBJECT('current_use_type', new_status_param)
+    );
+
+    SELECT 'Parcel status updated successfully' AS result;
+END$$
+
+-- Procedure for audit trail report
+CREATE PROCEDURE AuditTrailReport(
+    IN table_name_param VARCHAR(100),
+    IN record_id_param INT,
+    IN days_back_param INT DEFAULT 30
+)
+BEGIN
+    SELECT
+        al.audit_id,
+        al.action,
+        al.timestamp,
+        u.username,
+        al.old_values,
+        al.new_values
+    FROM audit_log al
+    LEFT JOIN user_account u ON al.user_id = u.user_id
+    WHERE al.table_name = table_name_param
+    AND al.record_pk_value = record_id_param
+    AND al.timestamp >= DATE_SUB(NOW(), INTERVAL days_back_param DAY)
+    ORDER BY al.timestamp DESC;
+END$$
+2025-10-12 13:06:42,849 - INFO - Query #16 started: SELECT user_account.user_id AS user_account_user_id, user_account.username AS user_account_username,...
+2025-10-12 13:06:42,849 - INFO - Parameters: {'username_1': 'admin', 'param_1': 1}
+2025-10-12 13:06:42,852 - INFO - Query #16 completed in 2.76ms
+2025-10-12 13:06:42,853 - INFO - Query #17 started: SELECT user_account.user_id AS user_account_user_id, user_account.username AS user_account_username,...
+2025-10-12 13:06:42,854 - INFO - Parameters: {'username_1': 'registrar', 'param_1': 1}
+2025-10-12 13:06:42,856 - INFO - Query #17 completed in 3.11ms
+2025-10-12 13:06:42,857 - INFO - Query #18 started: SELECT user_account.user_id AS user_account_user_id, user_account.username AS user_account_username,...
+2025-10-12 13:06:42,858 - INFO - Parameters: {'username_1': 'approver', 'param_1': 1}
+2025-10-12 13:06:42,860 - INFO - Query #18 completed in 2.35ms
+2025-10-12 13:06:42,861 - INFO - Query #19 started: SELECT user_account.user_id AS user_account_user_id, user_account.username AS user_account_username,...
+2025-10-12 13:06:42,861 - INFO - Parameters: {'username_1': 'citizen', 'param_1': 1}
+2025-10-12 13:06:42,864 - INFO - Query #19 completed in 2.96ms
