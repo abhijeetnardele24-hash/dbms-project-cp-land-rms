@@ -1,31 +1,48 @@
 # Language classification for GitHub
 # This ensures GitHub properly recognizes this as a SQL/Database project
 
-# SQL files - Primary project language
+# SQL files - PRIMARY PROJECT LANGUAGE (HIGHEST PRIORITY)
 *.sql linguist-detectable=true
 *.sql linguist-language=SQL
 database/*.sql linguist-vendored=false
+database/**/*.sql linguist-vendored=false
 
-# Python files - Backend logic
+# Python files - Backend logic (Keep visible)
 *.py linguist-detectable=true
 *.py linguist-language=Python
-
-# Template files - Mark as documentation/generated
-*.html linguist-documentation=true
-app/templates/**/*.html linguist-documentation=true
-
-# Static files - Mark as vendored/generated
-app/static/css/*.css linguist-vendored=true
-app/static/js/*.js linguist-vendored=true
-
-# Migration files - Keep as Python
 migrations/*.py linguist-detectable=true
 
-# Documentation
+# HTML Templates - EXCLUDE FROM STATISTICS (Templates are not source code)
+app/templates/** linguist-vendored=true
+*.html linguist-vendored=true
+
+# CSS - EXCLUDE (Generated/Framework)
+app/static/css/** linguist-vendored=true
+app/static/*/css/** linguist-vendored=true
+*.css linguist-vendored=true
+
+# JavaScript - EXCLUDE (Libraries/Framework)
+app/static/js/** linguist-vendored=true
+app/static/*/js/** linguist-vendored=true
+*.js linguist-vendored=true
+
+# Static assets - EXCLUDE
+app/static/** linguist-vendored=true
+static/** linguist-vendored=true
+
+# Documentation - EXCLUDE
 *.md linguist-documentation=true
 *.txt linguist-documentation=true
+README* linguist-documentation=true
+LICENSE* linguist-documentation=true
 
-# Exclude from language statistics
-*.json linguist-detectable=false
-*.gitignore linguist-detectable=false
-*.env* linguist-detectable=false
+# Config/Data files - EXCLUDE
+*.json linguist-vendored=true
+*.yaml linguist-vendored=true
+*.yml linguist-vendored=true
+*.xml linguist-vendored=true
+*.csv linguist-vendored=true
+*.log linguist-vendored=true
+*.gitignore linguist-vendored=true
+*.env* linguist-vendored=true
+requirements.txt linguist-vendored=true

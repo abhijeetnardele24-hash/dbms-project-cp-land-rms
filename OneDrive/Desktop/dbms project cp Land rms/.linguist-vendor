@@ -1,0 +1,9 @@
+# Exclude HTML templates (they are UI, not core project logic)
+app/templates/
+
+# Exclude all static assets
+app/static/
+static/
+
+# Exclude paper/documentation
+paper/
