@@ -1,0 +1,36 @@
+/* Custom styles for Land Registry Management System */
+.stats-card {
+    transition: transform 0.2s;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Ensure text is visible on stat cards */
+.stat-card h2, .stat-card h6, .stat-card i,
+.stats-card h2, .stats-card h3, .stats-card h4, .stats-card p, .stats-card i {
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.stat-card.text-white, .stats-card {
+    color: #ffffff !important;
+}
+
+.notification-badge {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.card {
+    transition: box-shadow 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}

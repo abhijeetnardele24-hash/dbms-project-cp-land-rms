@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2 class="mb-4">My Mutations</h2>
+    <a href="{{ url_for('citizen.submit_mutation') }}" class="btn btn-primary mb-3">
+        <i class="fas fa-plus"></i> Submit Mutation Request
+    </a>
+    
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {% if mutations.items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>NUMBER</th>
+                            <th>TYPE</th>
+                            <th>STATUS</th>
+                            <th>DATE</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for mutation in mutations.items %}
+                    <tr style="cursor: pointer;" onclick="window.location='{{ url_for('citizen.mutation_detail', mutation_id=mutation.id) }}'">
+                        <td>{{ mutation.mutation_number }}</td>
+                        <td>{{ mutation.mutation_type }}</td>
+                        <td>
+                            {% if mutation.status == 'pending' %}
+                                <span class="badge bg-warning text-dark">pending</span>
+                            {% elif mutation.status == 'approved' %}
+                                <span class="badge bg-success">approved</span>
+                            {% elif mutation.status == 'rejected' %}
+                                <span class="badge bg-danger">rejected</span>
+                            {% elif mutation.status == 'under_review' %}
+                                <span class="badge bg-info">under review</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ mutation.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ mutation.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <a href="{{ url_for('citizen.mutation_detail', mutation_id=mutation.id) }}" 
+                               class="btn btn-sm btn-outline-primary" 
+                               onclick="event.stopPropagation();">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if mutations.has_prev or mutations.has_next %}
+            <nav aria-label="Mutations pagination">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {{ 'disabled' if not mutations.has_prev }}">
+                        <a class="page-link" href="{{ url_for('citizen.my_mutations', page=mutations.prev_num) if mutations.has_prev else '#' }}">
+                            Previous
+                        </a>
+                    </li>
+                    {% for page_num in mutations.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            <li class="page-item {{ 'active' if page_num == mutations.page }}">
+                                <a class="page-link" href="{{ url_for('citizen.my_mutations', page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {{ 'disabled' if not mutations.has_next }}">
+                        <a class="page-link" href="{{ url_for('citizen.my_mutations', page=mutations.next_num) if mutations.has_next else '#' }}">
+                            Next
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No mutations found. Submit your first mutation request!</p>
+                <a href="{{ url_for('citizen.submit_mutation') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Submit Mutation Request
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+</style>
+{% endblock %}

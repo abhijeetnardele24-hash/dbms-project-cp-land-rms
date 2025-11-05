@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>All Properties</h2>
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ULPIN</th>
+                        <th>LOCATION</th>
+                        <th>TYPE</th>
+                        <th>STATUS</th>
+                        <th style="width: 150px;">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for property in properties.items %}
+                    <tr>
+                        <td>{{ property.ulpin or 'Pending' }}</td>
+                        <td>{{ property.village_city }}, {{ property.district }}</td>
+                        <td>{{ property.property_type }}</td>
+                        <td><span class="badge bg-info">{{ property.status }}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#propertyModal{{ property.id }}">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- All Modals Outside Table -->
+{% for property in properties.items %}
+<!-- Property Details Modal -->
+<div class="modal fade" id="propertyModal{{ property.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h5 class="modal-title"><i class="fas fa-home"></i> Property Details - {{ property.ulpin or 'Pending' }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-primary"><i class="fas fa-info-circle"></i> Basic Information</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>ULPIN:</strong></td><td>{{ property.ulpin or 'Not Assigned' }}</td></tr>
+                            <tr><td><strong>Property Type:</strong></td><td>{{ property.property_type or 'N/A' }}</td></tr>
+                            <tr><td><strong>Sub Type:</strong></td><td>{{ property.sub_property_type or 'N/A' }}</td></tr>
+                            <tr><td><strong>Status:</strong></td><td><span class="badge bg-{{ 'success' if property.status == 'approved' else 'warning' }}">{{ property.status }}</span></td></tr>
+                            <tr><td><strong>Registration Date:</strong></td><td>{{ property.registration_date.strftime('%Y-%m-%d') if property.registration_date else 'N/A' }}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-primary"><i class="fas fa-map-marker-alt"></i> Location</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>State:</strong></td><td>{{ property.state or 'N/A' }}</td></tr>
+                            <tr><td><strong>District:</strong></td><td>{{ property.district or 'N/A' }}</td></tr>
+                            <tr><td><strong>Village/City:</strong></td><td>{{ property.village_city or 'N/A' }}</td></tr>
+                            <tr><td><strong>Locality:</strong></td><td>{{ property.locality or 'N/A' }}</td></tr>
+                            <tr><td><strong>Address:</strong></td><td>{{ property.street_address or 'N/A' }}</td></tr>
+                            <tr><td><strong>Pincode:</strong></td><td>{{ property.pincode or 'N/A' }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-primary"><i class="fas fa-ruler-combined"></i> Property Details</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Survey Number:</strong></td><td>{{ property.survey_number or 'N/A' }}</td></tr>
+                            <tr><td><strong>Plot Number:</strong></td><td>{{ property.plot_number or 'N/A' }}</td></tr>
+                            <tr><td><strong>Area:</strong></td><td>{{ property.area or 'N/A' }} {{ property.area_unit or '' }}</td></tr>
+                            <tr><td><strong>Market Value:</strong></td><td>₹{{ "{:,.0f}".format(property.market_value) if property.market_value else 'N/A' }}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-primary"><i class="fas fa-shield-alt"></i> Status Flags</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Disputed:</strong></td><td><span class="badge bg-{{ 'danger' if property.is_disputed else 'success' }}">{{ 'Yes' if property.is_disputed else 'No' }}</span></td></tr>
+                            <tr><td><strong>Mortgaged:</strong></td><td><span class="badge bg-{{ 'warning' if property.is_mortgaged else 'success' }}">{{ 'Yes' if property.is_mortgaged else 'No' }}</span></td></tr>
+                            <tr><td><strong>Property Tax (Annual):</strong></td><td>₹{{ "{:,.0f}".format(property.property_tax_annual) if property.property_tax_annual else 'N/A' }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

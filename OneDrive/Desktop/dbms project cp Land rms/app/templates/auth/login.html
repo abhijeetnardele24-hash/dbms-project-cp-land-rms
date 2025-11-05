@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Login - {{ app_name }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title text-center mb-4">
+                    <i class="fas fa-sign-in-alt text-primary"></i> Login to LRMS
+                </h3>
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control", placeholder="Enter your email") }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small">{{ form.email.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control", placeholder="Enter your password") }}
+                        {% if form.password.errors %}
+                            <div class="text-danger small">{{ form.password.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3 form-check">
+                        {{ form.remember_me(class="form-check-input") }}
+                        {{ form.remember_me.label(class="form-check-label") }}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                </form>
+                <div class="text-center mt-3">
+                    <p class="mb-0">Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a></p>
+                </div>
+                <hr class="my-3">
+                <div class="alert alert-info small">
+                    <strong>Test Accounts:</strong><br>
+                    Admin: admin@lrms.com<br>
+                    Registrar: registrar@lrms.com<br>
+                    Officer: officer@lrms.com<br>
+                    Citizen: user@lrms.com<br>
+                    Password: password123
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Payment Successful - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .success-container {
+        max-width: 700px;
+        margin: 50px auto;
+    }
+    .success-animation {
+        text-align: center;
+        padding: 40px;
+    }
+    .checkmark {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: inline-block;
+        background: #28a745;
+        color: white;
+        line-height: 100px;
+        font-size: 50px;
+        animation: scaleIn 0.5s ease-in-out;
+    }
+    @keyframes scaleIn {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    .receipt-card {
+        background: white;
+        border: 2px solid #28a745;
+        border-radius: 10px;
+        padding: 30px;
+        margin-top: 20px;
+    }
+    .receipt-header {
+        text-align: center;
+        border-bottom: 2px dashed #dee2e6;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
+    .receipt-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .receipt-row:last-child {
+        border-bottom: none;
+    }
+    .amount-paid {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #28a745;
+        margin: 20px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-container">
+    <div class="success-animation">
+        <div class="checkmark">
+            <i class="fas fa-check"></i>
+        </div>
+        <h2 class="mt-4 text-success">Payment Successful!</h2>
+        <p class="text-muted">Your payment has been processed successfully</p>
+    </div>
+    
+    <div class="receipt-card">
+        <div class="receipt-header">
+            <h4>Payment Receipt</h4>
+            <p class="text-muted mb-0">{{ app_name }}</p>
+        </div>
+        
+        <div class="receipt-row">
+            <strong>Receipt Number:</strong>
+            <span class="text-primary">{{ payment.receipt_number }}</span>
+        </div>
+        
+        <div class="receipt-row">
+            <strong>Payment Reference:</strong>
+            <span>{{ payment.payment_reference }}</span>
+        </div>
+        
+        <div class="receipt-row">
+            <strong>Transaction ID:</strong>
+            <span class="font-monospace">{{ payment.transaction_id }}</span>
+        </div>
+        
+        <div class="receipt-row">
+            <strong>Payment Date:</strong>
+            <span>{{ payment.completed_date.strftime('%d %B %Y, %I:%M %p') }}</span>
+        </div>
+        
+        <div class="receipt-row">
+            <strong>Payment Type:</strong>
+            <span>{{ payment.payment_type|replace('_', ' ')|title }}</span>
+        </div>
+        
+        <div class="receipt-row">
+            <strong>Payment Method:</strong>
+            <span>{{ payment.payment_method|title }} (Razorpay)</span>
+        </div>
+        
+        {% if payment.property %}
+        <div class="receipt-row">
+            <strong>Property:</strong>
+            <span>{{ payment.property.ulpin }}</span>
+        </div>
+        {% endif %}
+        
+        {% if payment.tax_year %}
+        <div class="receipt-row">
+            <strong>Tax Year:</strong>
+            <span>{{ payment.tax_year }}</span>
+        </div>
+        {% endif %}
+        
+        <div class="receipt-header mt-4 pt-4">
+            <h5>Amount Paid</h5>
+            <div class="amount-paid">₹{{ "{:,.2f}".format(payment.amount) }}</div>
+            <p class="text-success mb-0">
+                <i class="fas fa-check-circle"></i> Payment Completed
+            </p>
+        </div>
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{{ url_for('citizen.payments') }}" class="btn btn-primary btn-lg me-2">
+            <i class="fas fa-list"></i> View All Payments
+        </a>
+        <a href="{{ url_for('citizen.dashboard') }}" class="btn btn-secondary btn-lg">
+            <i class="fas fa-home"></i> Go to Dashboard
+        </a>
+    </div>
+    
+    <div class="text-center mt-3">
+        <button onclick="window.print()" class="btn btn-outline-primary">
+            <i class="fas fa-print"></i> Print Receipt
+        </button>
+    </div>
+    
+    <div class="alert alert-success mt-4">
+        <i class="fas fa-envelope"></i> A confirmation email has been sent to your registered email address.
+    </div>
+</div>
+
+<script>
+// Auto-scroll to top
+window.scrollTo(0, 0);
+
+// Confetti effect (optional)
+setTimeout(() => {
+    console.log('Payment successful!');
+}, 1000);
+</script>
+{% endblock %}

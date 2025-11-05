@@ -1,0 +1,722 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">📝 Register New Property</h2>
+    
+    <!-- Display Form Errors -->
+    {% if form.errors %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <h5>⚠️ Please fix the following errors:</h5>
+        <ul>
+        {% for field, errors in form.errors.items() %}
+            {% for error in errors %}
+                <li><strong>{{ form[field].label.text }}:</strong> {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+    
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" id="propertyForm">
+                {{ form.hidden_tag() }}
+                
+                <!-- Tabs Navigation -->
+                <ul class="nav nav-tabs mb-4" id="propertyTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="location-tab" data-bs-toggle="tab" data-bs-target="#location" type="button">📍 Location</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="measurements-tab" data-bs-toggle="tab" data-bs-target="#measurements" type="button">📏 Measurements</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="classification-tab" data-bs-toggle="tab" data-bs-target="#classification" type="button">🏘️ Classification</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="construction-tab" data-bs-toggle="tab" data-bs-target="#construction" type="button">🏗️ Construction</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="agriculture-tab" data-bs-toggle="tab" data-bs-target="#agriculture" type="button">🌾 Agriculture</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="utilities-tab" data-bs-toggle="tab" data-bs-target="#utilities" type="button">⚡ Utilities</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="valuation-tab" data-bs-toggle="tab" data-bs-target="#valuation" type="button">💰 Valuation</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button">📄 Documents</button>
+                    </li>
+                </ul>
+                
+                <!-- Tabs Content -->
+                <div class="tab-content" id="propertyTabsContent">
+                    
+                    <!-- LOCATION TAB -->
+                    <div class="tab-pane fade show active" id="location" role="tabpanel">
+                        <h5 class="mb-3">📍 Location Details</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.state.label(class="form-label") }}<span class="text-danger">*</span>
+                                {{ form.state(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.district.label(class="form-label") }}<span class="text-danger">*</span>
+                                {{ form.district(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.taluka.label(class="form-label") }}
+                                {{ form.taluka(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.village_city.label(class="form-label") }}<span class="text-danger">*</span>
+                                {{ form.village_city(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.locality.label(class="form-label") }}
+                                {{ form.locality(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.sub_locality.label(class="form-label") }}
+                                {{ form.sub_locality(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.street_address.label(class="form-label") }}
+                                {{ form.street_address(class="form-control", rows=2) }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.landmark.label(class="form-label") }}
+                                {{ form.landmark(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.pincode.label(class="form-label") }}
+                                {{ form.pincode(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.ward_number.label(class="form-label") }}
+                                {{ form.ward_number(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.zone.label(class="form-label") }}
+                                {{ form.zone(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.gram_panchayat.label(class="form-label") }}
+                                {{ form.gram_panchayat(class="form-control") }}
+                            </div>
+                        </div>
+                        
+                        <h6 class="mt-4 mb-3">🌍 GPS Coordinates & Location Map</h6>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Click on the map to set property location, or enter coordinates manually. All data is saved in MySQL database.
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.latitude.label(class="form-label") }}
+                                {{ form.latitude(class="form-control", id="latitude", placeholder="e.g., 19.0760", readonly="") }}
+                                <small class="text-muted">Auto-filled from map</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.longitude.label(class="form-label") }}
+                                {{ form.longitude(class="form-control", id="longitude", placeholder="e.g., 72.8777", readonly="") }}
+                                <small class="text-muted">Auto-filled from map</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.altitude.label(class="form-label") }}
+                                {{ form.altitude(class="form-control", id="altitude", placeholder="meters") }}
+                            </div>
+                        </div>
+                        
+                        <!-- Interactive Map -->
+                        <div class="card border-primary mb-3">
+                            <div class="card-header bg-primary text-white">
+                                <i class="fas fa-map-marked-alt"></i> Interactive Property Location Map
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="propertyMap" style="height: 450px; width: 100%;"></div>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted">
+                                    <i class="fas fa-mouse-pointer"></i> Click on map to mark property location | 
+                                    <i class="fas fa-search"></i> Search box above to find your location |
+                                    <i class="fas fa-database"></i> Coordinates auto-save to MySQL
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-outline-primary mb-3" onclick="getCurrentLocation()">
+                            <i class="fas fa-crosshairs"></i> Use My Current Location
+                        </button>
+                    </div>
+                    
+                    <!-- MEASUREMENTS TAB -->
+                    <div class="tab-pane fade" id="measurements" role="tabpanel">
+                        <h5 class="mb-3">📏 Land Measurements</h5>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                {{ form.survey_number.label(class="form-label") }}
+                                {{ form.survey_number(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.plot_number.label(class="form-label") }}
+                                {{ form.plot_number(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.block_number.label(class="form-label") }}
+                                {{ form.block_number(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.khasra_number.label(class="form-label") }}
+                                {{ form.khasra_number(class="form-control") }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.area.label(class="form-label") }}<span class="text-danger">*</span>
+                                {{ form.area(class="form-control", placeholder="Enter total area") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.area_unit.label(class="form-label") }}<span class="text-danger">*</span>
+                                {{ form.area_unit(class="form-control") }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                {{ form.length.label(class="form-label") }}
+                                {{ form.length(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.width.label(class="form-label") }}
+                                {{ form.width(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.road_frontage.label(class="form-label") }}
+                                {{ form.road_frontage(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.frontage_direction.label(class="form-label") }}
+                                {{ form.frontage_direction(class="form-control") }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.plot_shape.label(class="form-label") }}
+                                {{ form.plot_shape(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.terrain_type.label(class="form-label") }}
+                                {{ form.terrain_type(class="form-control") }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.built_up_area.label(class="form-label") }}
+                                {{ form.built_up_area(class="form-control", placeholder="For constructed properties") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.carpet_area.label(class="form-label") }}
+                                {{ form.carpet_area(class="form-control", placeholder="Usable area") }}
+                            </div>
+                        </div>
+                        
+                        <h6 class="mt-4 mb-3">📐 Boundaries</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.north_boundary.label(class="form-label") }}
+                                {{ form.north_boundary(class="form-control", placeholder="e.g., Road, Mr. Sharma's Plot") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.south_boundary.label(class="form-label") }}
+                                {{ form.south_boundary(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.east_boundary.label(class="form-label") }}
+                                {{ form.east_boundary(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.west_boundary.label(class="form-label") }}
+                                {{ form.west_boundary(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- CLASSIFICATION TAB -->
+                    <div class="tab-pane fade" id="classification" role="tabpanel">
+                        <h5 class="mb-3">🏘️ Property Classification</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.property_type.label(class="form-label") }}<span class="text-danger">*</span>
+                                {{ form.property_type(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.sub_property_type.label(class="form-label") }}
+                                {{ form.sub_property_type(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.property_nature.label(class="form-label") }}
+                                {{ form.property_nature(class="form-control") }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.land_category_id.label(class="form-label") }}
+                                {{ form.land_category_id(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.usage_type_id.label(class="form-label") }}
+                                {{ form.usage_type_id(class="form-control") }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.current_land_use.label(class="form-label") }}
+                                {{ form.current_land_use(class="form-control", placeholder="Current usage") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.zoning_classification.label(class="form-label") }}
+                                {{ form.zoning_classification(class="form-control") }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.property_age_years.label(class="form-label") }}
+                                {{ form.property_age_years(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.property_condition.label(class="form-label") }}
+                                {{ form.property_condition(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.occupancy_status.label(class="form-label") }}
+                                {{ form.occupancy_status(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- CONSTRUCTION TAB -->
+                    <div class="tab-pane fade" id="construction" role="tabpanel">
+                        <h5 class="mb-3">🏗️ Construction Details</h5>
+                        <p class="text-muted">Fill this section only if the property has construction</p>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.number_of_floors.label(class="form-label") }}
+                                {{ form.number_of_floors(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.construction_type.label(class="form-label") }}
+                                {{ form.construction_type(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.year_of_construction.label(class="form-label") }}
+                                {{ form.year_of_construction(class="form-control", placeholder="YYYY") }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                {{ form.number_of_bedrooms.label(class="form-label") }}
+                                {{ form.number_of_bedrooms(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.number_of_bathrooms.label(class="form-label") }}
+                                {{ form.number_of_bathrooms(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.number_of_kitchens.label(class="form-label") }}
+                                {{ form.number_of_kitchens(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.parking_spaces.label(class="form-label") }}
+                                {{ form.parking_spaces(class="form-control") }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                {{ form.flooring_type.label(class="form-label") }}
+                                {{ form.flooring_type(class="form-control", placeholder="e.g., Marble, Tiles, Wooden") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AGRICULTURE TAB -->
+                    <div class="tab-pane fade" id="agriculture" role="tabpanel">
+                        <h5 class="mb-3">🌾 Agriculture & Soil Details</h5>
+                        <p class="text-muted">Fill this section for agricultural land</p>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.soil_type.label(class="form-label") }}
+                                {{ form.soil_type(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.soil_quality.label(class="form-label") }}
+                                {{ form.soil_quality(class="form-control") }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.irrigation_type.label(class="form-label") }}
+                                {{ form.irrigation_type(class="form-control", placeholder="Well/Canal/Drip/Sprinkler") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.current_crop.label(class="form-label") }}
+                                {{ form.current_crop(class="form-control", placeholder="Current or previous crop") }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.tree_count.label(class="form-label") }}
+                                {{ form.tree_count(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- UTILITIES TAB -->
+                    <div class="tab-pane fade" id="utilities" role="tabpanel">
+                        <h5 class="mb-3">⚡ Utilities & Infrastructure</h5>
+                        
+                        <h6 class="mb-3">💧 Water Resources</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.water_source.label(class="form-label") }}
+                                {{ form.water_source(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.borewell_depth_ft.label(class="form-label") }}
+                                {{ form.borewell_depth_ft(class="form-control", placeholder="If applicable") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.water_supply_hours_per_day.label(class="form-label") }}
+                                {{ form.water_supply_hours_per_day(class="form-control", placeholder="0-24 hours") }}
+                            </div>
+                        </div>
+                        
+                        <h6 class="mt-4 mb-3">⚡ Electricity</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.electricity_connection_type.label(class="form-label") }}
+                                {{ form.electricity_connection_type(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.electricity_load_kw.label(class="form-label") }}
+                                {{ form.electricity_load_kw(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.electricity_meter_number.label(class="form-label") }}
+                                {{ form.electricity_meter_number(class="form-control") }}
+                            </div>
+                        </div>
+                        
+                        <h6 class="mt-4 mb-3">🛣️ Road Access</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.road_access.label(class="form-label") }}
+                                {{ form.road_access(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.road_type.label(class="form-label") }}
+                                {{ form.road_type(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.road_width_ft.label(class="form-label") }}
+                                {{ form.road_width_ft(class="form-control", placeholder="feet") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.distance_from_main_road_km.label(class="form-label") }}
+                                {{ form.distance_from_main_road_km(class="form-control", placeholder="km") }}
+                            </div>
+                        </div>
+                        
+                        <h6 class="mt-4 mb-3">🏠 Amenities</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.has_compound_wall.label(class="form-label") }}
+                                {{ form.has_compound_wall(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.has_main_gate.label(class="form-label") }}
+                                {{ form.has_main_gate(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.has_security.label(class="form-label") }}
+                                {{ form.has_security(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- VALUATION TAB -->
+                    <div class="tab-pane fade" id="valuation" role="tabpanel">
+                        <h5 class="mb-3">💰 Valuation & Legal</h5>
+                        
+                        <h6 class="mb-3">💵 Financial Details</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.market_value.label(class="form-label") }}
+                                {{ form.market_value(class="form-control", placeholder="Current market value") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.registered_value.label(class="form-label") }}
+                                {{ form.registered_value(class="form-control", placeholder="Registration value") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.stamp_duty_paid.label(class="form-label") }}
+                                {{ form.stamp_duty_paid(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.registration_fee_paid.label(class="form-label") }}
+                                {{ form.registration_fee_paid(class="form-control") }}
+                            </div>
+                        </div>
+                        
+                        <h6 class="mt-4 mb-3">⚖️ Legal Status</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.encumbrance_status.label(class="form-label") }}
+                                {{ form.encumbrance_status(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                {{ form.legal_issues.label(class="form-label") }}
+                                {{ form.legal_issues(class="form-control", rows=3, placeholder="Describe any legal issues or disputes") }}
+                            </div>
+                        </div>
+                        
+                        <h6 class="mt-4 mb-3">📝 Additional Information</h6>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                {{ form.description.label(class="form-label") }}
+                                {{ form.description(class="form-control", rows=3, placeholder="General description and notes") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                {{ form.special_features.label(class="form-label") }}
+                                {{ form.special_features(class="form-control", rows=3, placeholder="Swimming pool, garden, solar panels, etc.") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- DOCUMENTS TAB -->
+                    <div class="tab-pane fade" id="documents" role="tabpanel">
+                        <h5 class="mb-3">📄 Upload Documents</h5>
+                        <p class="text-muted">Please upload clear scanned copies of documents (PDF, JPG, PNG format)</p>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.document1.label(class="form-label") }}
+                                {{ form.document1(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.document2.label(class="form-label") }}
+                                {{ form.document2(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.document3.label(class="form-label") }}
+                                {{ form.document3(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- Submit Buttons -->
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">✅ Submit Property Registration</button>
+                    <a href="{{ url_for('citizen.my_properties') }}" class="btn btn-secondary btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== INTERACTIVE MAP FUNCTIONALITY ==========
+let map, marker;
+
+// Initialize map when page loads
+window.addEventListener('load', function() {
+    initializeMap();
+    
+    {% if form.errors %}
+        // Add error indicators to tabs with errors
+        console.log('Form has errors');
+    {% endif %}
+});
+
+function initializeMap() {
+    // Default center - India (can be changed based on user location)
+    const defaultLat = 20.5937;
+    const defaultLng = 78.9629;
+    const defaultZoom = 5;
+    
+    // Check if coordinates already exist in form
+    const existingLat = document.getElementById('latitude').value;
+    const existingLng = document.getElementById('longitude').value;
+    
+    const centerLat = existingLat ? parseFloat(existingLat) : defaultLat;
+    const centerLng = existingLng ? parseFloat(existingLng) : defaultLng;
+    const zoom = existingLat ? 15 : defaultZoom;
+    
+    // Initialize Leaflet map
+    map = L.map('propertyMap').setView([centerLat, centerLng], zoom);
+    
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(map);
+    
+    // Add marker if coordinates exist
+    if (existingLat && existingLng) {
+        addMarker(centerLat, centerLng);
+    }
+    
+    // Click event to add/move marker
+    map.on('click', function(e) {
+        const lat = e.latlng.lat.toFixed(6);
+        const lng = e.latlng.lng.toFixed(6);
+        addMarker(lat, lng);
+        updateCoordinateFields(lat, lng);
+        
+        // Show success notification
+        Swal.fire({
+            icon: 'success',
+            title: 'Location Marked!',
+            text: `Coordinates: ${lat}, ${lng}`,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+    });
+}
+
+function addMarker(lat, lng) {
+    // Remove existing marker if any
+    if (marker) {
+        map.removeLayer(marker);
+    }
+    
+    // Add new marker with custom popup
+    marker = L.marker([lat, lng], {
+        draggable: true
+    }).addTo(map);
+    
+    marker.bindPopup(`
+        <b><i class="fas fa-map-marker-alt"></i> Property Location</b><br>
+        <i class="fas fa-crosshairs"></i> Lat: ${lat}<br>
+        <i class="fas fa-crosshairs"></i> Lng: ${lng}<br>
+        <small class="text-muted">Drag marker to adjust</small>
+    `).openPopup();
+    
+    // Update coordinates when marker is dragged
+    marker.on('dragend', function(e) {
+        const position = marker.getLatLng();
+        const newLat = position.lat.toFixed(6);
+        const newLng = position.lng.toFixed(6);
+        updateCoordinateFields(newLat, newLng);
+        marker.setPopupContent(`
+            <b><i class="fas fa-map-marker-alt"></i> Property Location</b><br>
+            <i class="fas fa-crosshairs"></i> Lat: ${newLat}<br>
+            <i class="fas fa-crosshairs"></i> Lng: ${newLng}<br>
+            <small class="text-muted">Drag marker to adjust</small>
+        `);
+    });
+    
+    // Center map on marker
+    map.setView([lat, lng], 15);
+}
+
+function updateCoordinateFields(lat, lng) {
+    document.getElementById('latitude').value = lat;
+    document.getElementById('longitude').value = lng;
+}
+
+function getCurrentLocation() {
+    if (navigator.geolocation) {
+        // Show loading
+        Swal.fire({
+            title: 'Getting your location...',
+            html: 'Please wait while we fetch your GPS coordinates',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude.toFixed(6);
+                const lng = position.coords.longitude.toFixed(6);
+                
+                addMarker(lat, lng);
+                updateCoordinateFields(lat, lng);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Location Found!',
+                    text: `Your location: ${lat}, ${lng}`,
+                    confirmButtonText: 'OK'
+                });
+            },
+            function(error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Location Error',
+                    text: 'Unable to get your location. Please click on the map or enter coordinates manually.',
+                    confirmButtonText: 'OK'
+                });
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    } else {
+        Swal.fire({
+            icon: 'error',
+            title: 'Not Supported',
+            text: 'Geolocation is not supported by your browser.',
+            confirmButtonText: 'OK'
+        });
+    }
+}
+
+// Auto-save form data to localStorage (optional enhancement)
+document.getElementById('propertyForm').addEventListener('input', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
+        localStorage.setItem('property_' + e.target.name, e.target.value);
+    }
+});
+</script>
+{% endblock %}

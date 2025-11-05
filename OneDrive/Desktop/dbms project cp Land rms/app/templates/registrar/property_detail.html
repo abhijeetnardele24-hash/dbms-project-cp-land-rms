@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Property Details - Registrar{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('registrar.pending_registrations') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Pending
+    </a>
+</div>
+
+<h2 class="mb-4"><i class="fas fa-building"></i> Property Details</h2>
+
+<!-- Property Information -->
+<div class="card mb-3">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-info-circle"></i> Property Information</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>ULPIN:</strong> {{ property.ulpin or 'Pending ULPIN' }}</p>
+                <p><strong>Survey Number:</strong> {{ property.survey_number or 'N/A' }}</p>
+                <p><strong>Property Type:</strong> <span class="badge bg-secondary">{{ property.property_type }}</span></p>
+                <p><strong>Area:</strong> {{ property.area }} {{ property.area_unit }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Location:</strong> {{ property.village_city }}, {{ property.district }}, {{ property.state }}</p>
+                <p><strong>Status:</strong> 
+                    {% if property.status == 'approved' %}
+                    <span class="badge bg-success">Approved</span>
+                    {% elif property.status == 'pending' %}
+                    <span class="badge bg-warning">Pending</span>
+                    {% elif property.status == 'rejected' %}
+                    <span class="badge bg-danger">Rejected</span>
+                    {% else %}
+                    <span class="badge bg-info">{{ property.status }}</span>
+                    {% endif %}
+                </p>
+                <p><strong>Submitted:</strong> {{ property.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Decision Information (if already processed) -->
+{% if property.status in ['approved', 'rejected'] %}
+<div class="card mb-3">
+    <div class="card-header bg-{{ 'success' if property.status == 'approved' else 'danger' }} text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-{{ 'check-circle' if property.status == 'approved' else 'times-circle' }}"></i>
+            Decision: {{ property.status|title }}
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if property.status == 'approved' %}
+            <p><strong>ULPIN Generated:</strong> {{ property.ulpin }}</p>
+            <p><strong>Approved By:</strong> 
+                {% if property.approver %}
+                {{ property.approver.full_name }}
+                {% else %}
+                Registrar ID: {{ property.approved_by }}
+                {% endif %}
+            </p>
+            <p><strong>Approval Date:</strong> {{ property.approval_date.strftime('%Y-%m-%d %H:%M') if property.approval_date else 'N/A' }}</p>
+            <p><strong>Registration Date:</strong> {{ property.registration_date.strftime('%Y-%m-%d %H:%M') if property.registration_date else 'N/A' }}</p>
+        {% elif property.status == 'rejected' %}
+            <p><strong>Rejection Reason:</strong></p>
+            <div class="alert alert-danger">
+                {{ property.rejection_reason or 'No reason provided' }}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Approval Actions (only for pending/under_review) -->
+{% if property.status in ['pending', 'under_review', 'documents_verified'] %}
+<div class="card">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0"><i class="fas fa-gavel"></i> Approval Actions</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('registrar.process_property', property_id=property.id) }}">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.action.label(class="form-label") }}
+                {{ form.action(class="form-select") }}
+            </div>
+            <div class="mb-3">
+                {{ form.comments.label(class="form-label") }}
+                {{ form.comments(class="form-control", rows=4, placeholder="Enter your comments or rejection reason...") }}
+            </div>
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-paper-plane"></i> Submit Decision
+            </button>
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle"></i> This property has already been processed. No further action is required.
+</div>
+{% endif %}
+{% endblock %}

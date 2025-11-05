@@ -1,0 +1,620 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>🏠 Property Details</h2>
+        <div>
+            <span class="badge {% if property.status == 'approved' %}bg-success{% elif property.status == 'pending' %}bg-warning{% elif property.status == 'rejected' %}bg-danger{% else %}bg-secondary{% endif %} fs-6">
+                {{ property.status|upper }}
+            </span>
+            <a href="{{ url_for('citizen.my_properties') }}" class="btn btn-secondary ms-2">← Back to My Properties</a>
+        </div>
+    </div>
+
+    {% if property.ulpin %}
+    <div class="alert alert-info">
+        <strong>📋 ULPIN:</strong> {{ property.ulpin }}
+    </div>
+    {% endif %}
+
+    <!-- Tabs for organized display -->
+    <ul class="nav nav-tabs mb-3" id="detailTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button">📋 Basic Info</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="location-tab" data-bs-toggle="tab" data-bs-target="#location" type="button">📍 Location</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="measurements-tab" data-bs-toggle="tab" data-bs-target="#measurements" type="button">📏 Measurements</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="construction-tab" data-bs-toggle="tab" data-bs-target="#construction" type="button">🏗️ Construction</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="agriculture-tab" data-bs-toggle="tab" data-bs-target="#agriculture" type="button">🌾 Agriculture</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="utilities-tab" data-bs-toggle="tab" data-bs-target="#utilities" type="button">⚡ Utilities</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="valuation-tab" data-bs-toggle="tab" data-bs-target="#valuation" type="button">💰 Valuation</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="detailTabsContent">
+        <!-- BASIC INFO TAB -->
+        <div class="tab-pane fade show active" id="basic" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">📋 Basic Information</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Property Type:</strong><br>
+                            <span class="badge bg-primary">{{ property.property_type|upper if property.property_type else 'N/A' }}</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Sub-Type:</strong><br>
+                            {{ property.sub_property_type or 'N/A' }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Property Nature:</strong><br>
+                            {{ property.property_nature or 'N/A' }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Status:</strong><br>
+                            <span class="badge {% if property.status == 'approved' %}bg-success{% elif property.status == 'pending' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                {{ property.status|upper }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Property Age:</strong><br>
+                            {{ property.property_age_years if property.property_age_years else 'N/A' }} years
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Property Condition:</strong><br>
+                            {{ property.property_condition or 'N/A' }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <strong>Occupancy Status:</strong><br>
+                            {{ property.occupancy_status or 'N/A' }}
+                        </div>
+                    </div>
+                    {% if property.description %}
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <strong>Description:</strong><br>
+                            <p class="text-muted">{{ property.description }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- LOCATION TAB -->
+        <div class="tab-pane fade" id="location" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">📍 Location Details</h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <strong>State:</strong><br>
+                            {{ property.state }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>District:</strong><br>
+                            {{ property.district }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Taluka:</strong><br>
+                            {{ property.taluka or 'N/A' }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <strong>Village/City:</strong><br>
+                            {{ property.village_city }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Locality:</strong><br>
+                            {{ property.locality or 'N/A' }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Sub-Locality:</strong><br>
+                            {{ property.sub_locality or 'N/A' }}
+                        </div>
+                    </div>
+                    {% if property.street_address %}
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <strong>Street Address:</strong><br>
+                            {{ property.street_address }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <strong>Landmark:</strong><br>
+                            {{ property.landmark or 'N/A' }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Pincode:</strong><br>
+                            {{ property.pincode or 'N/A' }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Ward Number:</strong><br>
+                            {{ property.ward_number or 'N/A' }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Zone:</strong><br>
+                            {{ property.zone or 'N/A' }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Gram Panchayat:</strong><br>
+                            {{ property.gram_panchayat or 'N/A' }}
+                        </div>
+                    </div>
+                    
+                    {% if property.latitude and property.longitude %}
+                    <hr>
+                    <h6>🌍 GPS Coordinates & Location Map</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <strong>Latitude:</strong><br>
+                            <span class="badge bg-info">{{ property.latitude }}</span>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Longitude:</strong><br>
+                            <span class="badge bg-info">{{ property.longitude }}</span>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Altitude:</strong><br>
+                            <span class="badge bg-info">{{ property.altitude or 'N/A' }} meters</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Interactive Map Display -->
+                    <div class="card border-primary mt-3">
+                        <div class="card-header bg-primary text-white">
+                            <i class="fas fa-map-marked-alt"></i> Property Location on Map
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="propertyLocationMap" style="height: 400px; width: 100%;"></div>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">
+                                <i class="fas fa-database"></i> Location data stored in MySQL database |
+                                <i class="fas fa-map-marker-alt"></i> Exact coordinates: {{ property.latitude }}, {{ property.longitude }}
+                            </small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- MEASUREMENTS TAB -->
+        <div class="tab-pane fade" id="measurements" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">📏 Measurements & Boundaries</h5>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <strong>Survey Number:</strong><br>
+                            {{ property.survey_number or 'N/A' }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <strong>Plot Number:</strong><br>
+                            {{ property.plot_number or 'N/A' }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <strong>Block Number:</strong><br>
+                            {{ property.block_number or 'N/A' }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <strong>Khasra Number:</strong><br>
+                            {{ property.khasra_number or 'N/A' }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h6>📐 Area Measurements</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <strong>Total Area:</strong><br>
+                            <span class="fs-5 text-primary">{{ property.area }} {{ property.area_unit|upper }}</span>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Built-up Area:</strong><br>
+                            {{ property.built_up_area or 'N/A' }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Carpet Area:</strong><br>
+                            {{ property.carpet_area or 'N/A' }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <strong>Length:</strong><br>
+                            {{ property.length or 'N/A' }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <strong>Width:</strong><br>
+                            {{ property.width or 'N/A' }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <strong>Road Frontage:</strong><br>
+                            {{ property.road_frontage or 'N/A' }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <strong>Frontage Direction:</strong><br>
+                            {{ property.frontage_direction or 'N/A' }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Plot Shape:</strong><br>
+                            {{ property.plot_shape or 'N/A' }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Terrain Type:</strong><br>
+                            {{ property.terrain_type or 'N/A' }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h6>📐 Boundaries</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>North Boundary:</strong><br>
+                            {{ property.north_boundary or 'N/A' }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>South Boundary:</strong><br>
+                            {{ property.south_boundary or 'N/A' }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>East Boundary:</strong><br>
+                            {{ property.east_boundary or 'N/A' }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>West Boundary:</strong><br>
+                            {{ property.west_boundary or 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONSTRUCTION TAB -->
+        <div class="tab-pane fade" id="construction" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">🏗️ Construction Details</h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <strong>Number of Floors:</strong><br>
+                            {{ property.number_of_floors or 'N/A' }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Construction Type:</strong><br>
+                            {{ property.construction_type or 'N/A' }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Year of Construction:</strong><br>
+                            {{ property.year_of_construction or 'N/A' }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <strong>Bedrooms:</strong><br>
+                            {{ property.number_of_bedrooms or 'N/A' }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <strong>Bathrooms:</strong><br>
+                            {{ property.number_of_bathrooms or 'N/A' }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <strong>Kitchens:</strong><br>
+                            {{ property.number_of_kitchens or 'N/A' }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <strong>Parking Spaces:</strong><br>
+                            {{ property.parking_spaces or 'N/A' }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <strong>Flooring Type:</strong><br>
+                            {{ property.flooring_type or 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AGRICULTURE TAB -->
+        <div class="tab-pane fade" id="agriculture" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">🌾 Agriculture & Soil</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Soil Type:</strong><br>
+                            {{ property.soil_type or 'N/A' }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Soil Quality:</strong><br>
+                            {{ property.soil_quality or 'N/A' }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Irrigation Type:</strong><br>
+                            {{ property.irrigation_type or 'N/A' }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Current Crop:</strong><br>
+                            {{ property.current_crop or 'N/A' }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Number of Trees:</strong><br>
+                            {{ property.tree_count or 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- UTILITIES TAB -->
+        <div class="tab-pane fade" id="utilities" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">⚡ Utilities & Infrastructure</h5>
+                    
+                    <h6>💧 Water Resources</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <strong>Water Source:</strong><br>
+                            {{ property.water_source or 'N/A' }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Borewell Depth:</strong><br>
+                            {{ property.borewell_depth_ft or 'N/A' }} feet
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Water Supply Hours/Day:</strong><br>
+                            {{ property.water_supply_hours_per_day or 'N/A' }} hours
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h6>⚡ Electricity</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <strong>Connection Type:</strong><br>
+                            {{ property.electricity_connection_type or 'N/A' }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Load (KW):</strong><br>
+                            {{ property.electricity_load_kw or 'N/A' }} KW
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Meter Number:</strong><br>
+                            {{ property.electricity_meter_number or 'N/A' }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h6>🛣️ Road Access</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <strong>Road Access:</strong><br>
+                            {{ property.road_access or 'N/A' }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Road Type:</strong><br>
+                            {{ property.road_type or 'N/A' }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Road Width:</strong><br>
+                            {{ property.road_width_ft or 'N/A' }} feet
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Distance from Main Road:</strong><br>
+                            {{ property.distance_from_main_road_km or 'N/A' }} km
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h6>🏠 Amenities</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <strong>Compound Wall:</strong><br>
+                            {% if property.has_compound_wall %}✅ Yes{% else %}❌ No{% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Main Gate:</strong><br>
+                            {% if property.has_main_gate %}✅ Yes{% else %}❌ No{% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Security:</strong><br>
+                            {% if property.has_security %}✅ Yes{% else %}❌ No{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VALUATION TAB -->
+        <div class="tab-pane fade" id="valuation" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">💰 Valuation & Legal</h5>
+                    
+                    <h6>💵 Financial Details</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Market Value:</strong><br>
+                            <span class="fs-5 text-success">₹ {{ "{:,.2f}".format(property.market_value) if property.market_value else 'N/A' }}</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Registered Value:</strong><br>
+                            <span class="fs-5 text-primary">₹ {{ "{:,.2f}".format(property.registered_value) if property.registered_value else 'N/A' }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Stamp Duty Paid:</strong><br>
+                            ₹ {{ "{:,.2f}".format(property.stamp_duty_paid) if property.stamp_duty_paid else 'N/A' }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Registration Fee Paid:</strong><br>
+                            ₹ {{ "{:,.2f}".format(property.registration_fee_paid) if property.registration_fee_paid else 'N/A' }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h6>⚖️ Legal Status</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Encumbrance Status:</strong><br>
+                            <span class="badge {% if property.encumbrance_status == 'clear' %}bg-success{% else %}bg-warning{% endif %}">
+                                {{ property.encumbrance_status or 'N/A' }}
+                            </span>
+                        </div>
+                    </div>
+                    {% if property.legal_issues %}
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <strong>Legal Issues:</strong><br>
+                            <div class="alert alert-warning">{{ property.legal_issues }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if property.special_features %}
+                    <hr>
+                    <h6>✨ Special Features</h6>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <p class="text-muted">{{ property.special_features }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ownership Information -->
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">👥 Ownership Information</h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <strong>Ownership Type:</strong><br>
+                    {{ ownership.ownership_type or 'N/A' }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <strong>Ownership Percentage:</strong><br>
+                    {{ ownership.ownership_percentage }}%
+                </div>
+                <div class="col-md-4 mb-3">
+                    <strong>Acquisition Date:</strong><br>
+                    {{ ownership.acquisition_date.strftime('%d-%m-%Y') if ownership.acquisition_date else 'N/A' }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-4 mb-4">
+        <a href="{{ url_for('citizen.my_properties') }}" class="btn btn-primary">← Back to My Properties</a>
+        {% if property.status == 'approved' %}
+        <a href="{{ url_for('citizen.submit_mutation') }}" class="btn btn-success">Request Mutation</a>
+        {% endif %}
+    </div>
+</div>
+
+{% block extra_js %}
+{% if property.latitude and property.longitude %}
+<script>
+// Initialize map for property location display
+window.addEventListener('load', function() {
+    const propertyLat = {{ property.latitude }};
+    const propertyLng = {{ property.longitude }};
+    
+    // Initialize map centered on property location
+    const map = L.map('propertyLocationMap').setView([propertyLat, propertyLng], 15);
+    
+    // Add OpenStreetMap tiles with satellite option
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(map);
+    
+    // Custom icon for property marker
+    const propertyIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+    
+    // Add marker for property
+    const marker = L.marker([propertyLat, propertyLng], {icon: propertyIcon}).addTo(map);
+    
+    // Create detailed popup
+    const popupContent = `
+        <div style="min-width: 200px;">
+            <h6 class="text-primary"><i class="fas fa-building"></i> Property Location</h6>
+            <hr style="margin: 5px 0;">
+            <p class="mb-1"><strong>ULPIN:</strong> {{ property.ulpin or 'N/A' }}</p>
+            <p class="mb-1"><strong>Type:</strong> <span class="badge bg-primary">{{ property.property_type|upper }}</span></p>
+            <p class="mb-1"><strong>Location:</strong> {{ property.village_city }}, {{ property.district }}</p>
+            <p class="mb-1"><strong>Area:</strong> {{ property.area }} {{ property.area_unit }}</p>
+            <hr style="margin: 5px 0;">
+            <p class="mb-1"><i class="fas fa-crosshairs"></i> <small>Lat: ${propertyLat.toFixed(6)}</small></p>
+            <p class="mb-0"><i class="fas fa-crosshairs"></i> <small>Lng: ${propertyLng.toFixed(6)}</small></p>
+            <hr style="margin: 5px 0;">
+            <a href="https://www.google.com/maps?q=${propertyLat},${propertyLng}" target="_blank" class="btn btn-sm btn-primary w-100 mt-2">
+                <i class="fas fa-external-link-alt"></i> Open in Google Maps
+            </a>
+        </div>
+    `;
+    
+    marker.bindPopup(popupContent).openPopup();
+    
+    // Add circle to show approximate property area (if available)
+    {% if property.area and property.area_unit == 'sqm' %}
+    const areaRadius = Math.sqrt({{ property.area }} / Math.PI);
+    L.circle([propertyLat, propertyLng], {
+        color: 'blue',
+        fillColor: '#30a5ff',
+        fillOpacity: 0.2,
+        radius: areaRadius
+    }).addTo(map).bindTooltip('Approximate property boundary');
+    {% endif %}
+});
+</script>
+{% endif %}
+{% endblock %}
+{% endblock content %}

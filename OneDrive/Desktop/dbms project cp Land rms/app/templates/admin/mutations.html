@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>All Mutations</h2>
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>NUMBER</th>
+                        <th>TYPE</th>
+                        <th>PROPERTY</th>
+                        <th>STATUS</th>
+                        <th style="width: 150px;">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mutation in mutations.items %}
+                    <tr>
+                        <td>{{ mutation.mutation_number }}</td>
+                        <td>{{ mutation.mutation_type }}</td>
+                        <td>{{ mutation.property_id }}</td>
+                        <td><span class="badge bg-{{ 'success' if mutation.status == 'approved' else 'warning' if mutation.status == 'pending' else 'danger' }}">{{ mutation.status }}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#mutationModal{{ mutation.id }}">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- All Modals Outside Table -->
+{% for mutation in mutations.items %}
+<!-- Mutation Details Modal -->
+                    <div class="modal fade" id="mutationModal{{ mutation.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                                    <h5 class="modal-title"><i class="fas fa-exchange-alt"></i> Mutation Details - {{ mutation.mutation_number }}</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-primary"><i class="fas fa-info-circle"></i> Basic Information</h6>
+                                            <table class="table table-sm">
+                                                <tr><td><strong>Mutation Number:</strong></td><td>{{ mutation.mutation_number }}</td></tr>
+                                                <tr><td><strong>Type:</strong></td><td><span class="badge bg-info">{{ mutation.mutation_type }}</span></td></tr>
+                                                <tr><td><strong>Status:</strong></td><td><span class="badge bg-{{ 'success' if mutation.status == 'approved' else 'warning' if mutation.status == 'pending' else 'danger' }}">{{ mutation.status }}</span></td></tr>
+                                                <tr><td><strong>Priority:</strong></td><td><span class="badge bg-{{ 'danger' if mutation.priority == 'high' else 'warning' if mutation.priority == 'normal' else 'secondary' }}">{{ mutation.priority or 'normal' }}</span></td></tr>
+                                                <tr><td><strong>Created:</strong></td><td>{{ mutation.created_at.strftime('%Y-%m-%d %H:%M') if mutation.created_at else 'N/A' }}</td></tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-primary"><i class="fas fa-home"></i> Property Information</h6>
+                                            <table class="table table-sm">
+                                                <tr><td><strong>Property ID:</strong></td><td>{{ mutation.property_id }}</td></tr>
+                                                {% if mutation.property %}
+                                                <tr><td><strong>ULPIN:</strong></td><td>{{ mutation.property.ulpin or 'N/A' }}</td></tr>
+                                                <tr><td><strong>Location:</strong></td><td>{{ mutation.property.village_city or 'N/A' }}</td></tr>
+                                                <tr><td><strong>Type:</strong></td><td>{{ mutation.property.property_type or 'N/A' }}</td></tr>
+                                                {% endif %}
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <h6 class="text-primary"><i class="fas fa-users"></i> Ownership Information</h6>
+                                            <table class="table table-sm">
+                                                <tr><td><strong>Previous Owners:</strong></td><td>{{ mutation.previous_owners or 'N/A' }}</td></tr>
+                                                <tr><td><strong>New Owners:</strong></td><td>{{ mutation.new_owners or 'N/A' }}</td></tr>
+                                                <tr><td><strong>Requester:</strong></td><td>{{ mutation.requester.full_name if mutation.requester else 'N/A' }} ({{ mutation.requester.email if mutation.requester else 'N/A' }})</td></tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <h6 class="text-primary"><i class="fas fa-file-alt"></i> Details</h6>
+                                            <table class="table table-sm">
+                                                <tr><td><strong>Description:</strong></td><td>{{ mutation.description or 'N/A' }}</td></tr>
+                                                <tr><td><strong>Reason:</strong></td><td>{{ mutation.reason or 'N/A' }}</td></tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-primary"><i class="fas fa-rupee-sign"></i> Payment Information</h6>
+                                            <table class="table table-sm">
+                                                <tr><td><strong>Mutation Fee:</strong></td><td>₹{{ "{:,.2f}".format(mutation.mutation_fee) if mutation.mutation_fee else 'N/A' }}</td></tr>
+                                                <tr><td><strong>Payment Status:</strong></td><td><span class="badge bg-{{ 'success' if mutation.payment_status == 'completed' else 'warning' }}">{{ mutation.payment_status or 'pending' }}</span></td></tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-primary"><i class="fas fa-clock"></i> Processing Dates</h6>
+                                            <table class="table table-sm">
+                                                <tr><td><strong>Processing Date:</strong></td><td>{{ mutation.processing_date.strftime('%Y-%m-%d') if mutation.processing_date else 'Not yet processed' }}</td></tr>
+                                                <tr><td><strong>Approval Date:</strong></td><td>{{ mutation.approval_date.strftime('%Y-%m-%d') if mutation.approval_date else 'N/A' }}</td></tr>
+                                                <tr><td><strong>Rejection Date:</strong></td><td>{{ mutation.rejection_date.strftime('%Y-%m-%d') if mutation.rejection_date else 'N/A' }}</td></tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    {% if mutation.rejection_reason %}
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <div class="alert alert-danger">
+                                                <strong>Rejection Reason:</strong> {{ mutation.rejection_reason }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if mutation.officer_comments %}
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <div class="alert alert-info">
+                                                <strong>Officer Comments:</strong> {{ mutation.officer_comments }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

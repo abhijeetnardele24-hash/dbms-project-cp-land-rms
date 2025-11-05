@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Mutations Management - Registrar{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-exchange-alt"></i> Mutation Requests Management</h2>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="fas fa-filter"></i> Filter by Status</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="under_review" {% if status == 'under_review' %}selected{% endif %}>Under Review</option>
+                    <option value="documents_verified" {% if status == 'documents_verified' %}selected{% endif %}>Documents Verified</option>
+                    <option value="approved" {% if status == 'approved' %}selected{% endif %}>Approved</option>
+                    <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-info me-2">Apply Filter</button>
+                <a href="{{ url_for('registrar.list_mutations') }}" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Mutations Table -->
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="fas fa-list"></i> Mutation Requests ({{ mutations.total }} total)</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Mutation #</th>
+                        <th>Property ID</th>
+                        <th>Type</th>
+                        <th>Requester</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Submitted</th>
+                        <th>Days Pending</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mutation in mutations.items %}
+                    <tr>
+                        <td><strong>{{ mutation.mutation_number or 'Pending' }}</strong></td>
+                        <td>
+                            {% if mutation.property %}
+                            <a href="{{ url_for('registrar.view_property', property_id=mutation.property_id) }}">
+                                {{ mutation.property.ulpin or 'Property #' + mutation.property_id|string }}
+                            </a>
+                            {% else %}
+                            {{ mutation.property_id }}
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-secondary">{{ mutation.mutation_type }}</span></td>
+                        <td>
+                            {% if mutation.requester %}
+                            {{ mutation.requester.full_name }}
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if mutation.status == 'approved' %}
+                            <span class="badge bg-success">Approved</span>
+                            {% elif mutation.status == 'pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% elif mutation.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% elif mutation.status == 'under_review' %}
+                            <span class="badge bg-info">Under Review</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ mutation.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if mutation.priority == 'urgent' %}
+                            <span class="badge bg-danger">Urgent</span>
+                            {% elif mutation.priority == 'high' %}
+                            <span class="badge bg-warning">High</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ mutation.priority }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ mutation.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if mutation.is_pending() %}
+                            <span class="badge bg-warning">{{ mutation.days_pending() }} days</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('officer.view_mutation', mutation_id=mutation.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted">No mutation requests found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if mutations.pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if mutations.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('registrar.list_mutations', page=mutations.prev_num, status=status) }}">Previous</a>
+                </li>
+                {% endif %}
+
+                {% for page_num in mutations.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == mutations.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('registrar.list_mutations', page=page_num, status=status) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if mutations.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('registrar.list_mutations', page=mutations.next_num, status=status) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Statistics Summary -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Information</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i> 
+                    As a Registrar, you have oversight access to all mutation requests in the system. 
+                    Officers are responsible for processing these mutations. Click "View" to see detailed information about each mutation.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

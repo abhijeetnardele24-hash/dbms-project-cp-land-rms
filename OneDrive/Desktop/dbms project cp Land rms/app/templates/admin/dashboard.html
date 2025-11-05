@@ -1,0 +1,614 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.stat-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    border-radius: 10px;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+.stat-card h6, .stat-card h2, .stat-card i {
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.stat-card {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.stat-card * {
+    color: #ffffff !important;
+}
+.chart-container {
+    position: relative;
+    height: 350px;
+    margin-bottom: 20px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h2>
+    <button class="btn btn-outline-primary" onclick="refreshDashboard()">
+        <i class="fas fa-sync-alt"></i> Refresh
+    </button>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('admin.users') }}" class="text-decoration-none">
+            <div class="card stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; cursor: pointer;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-1" style="color: #ffffff !important; font-weight: 600;">Total Users</h6>
+                            <h2 class="mb-0 fw-bold" id="total-users" style="color: #ffffff !important;">{{ total_users }}</h2>
+                        </div>
+                        <div class="fs-1" style="opacity: 0.3;">
+                            <i class="fas fa-users" style="color: #ffffff !important;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('admin.properties') }}" class="text-decoration-none">
+            <div class="card stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none; cursor: pointer;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-1" style="color: #ffffff !important; font-weight: 600;">Total Properties</h6>
+                            <h2 class="mb-0 fw-bold" id="total-properties" style="color: #ffffff !important;">{{ total_properties }}</h2>
+                        </div>
+                        <div class="fs-1" style="opacity: 0.3;">
+                            <i class="fas fa-home" style="color: #ffffff !important;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('admin.mutations') }}" class="text-decoration-none">
+            <div class="card stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border: none; cursor: pointer;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-1" style="color: #ffffff !important; font-weight: 600;">Pending Items</h6>
+                            <h2 class="mb-0 fw-bold" id="pending-items" style="color: #ffffff !important;">{{ pending_registrations + pending_mutations }}</h2>
+                            <small class="d-block mt-1" style="color: #ffffff !important; opacity: 0.9;">{{ pending_registrations }} properties, {{ pending_mutations }} mutations</small>
+                        </div>
+                        <div class="fs-1" style="opacity: 0.3;">
+                            <i class="fas fa-clock" style="color: #ffffff !important;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('admin.revenue') }}" class="text-decoration-none">
+            <div class="card stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border: none; cursor: pointer;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-1" style="color: #ffffff !important; font-weight: 600;">Total Revenue</h6>
+                            <h2 class="mb-0 fw-bold" id="total-revenue" style="color: #ffffff !important;">₹{{ "{:,.0f}".format(total_revenue) }}</h2>
+                            <small class="d-block mt-1" style="color: #ffffff !important; opacity: 0.9;">Click for detailed report</small>
+                        </div>
+                        <div class="fs-1" style="opacity: 0.3;">
+                            <i class="fas fa-chart-line" style="color: #ffffff !important;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-chart-line text-primary"></i> Property Registration Trends</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="propertyTrendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-chart-pie text-success"></i> Property Status Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="propertyStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-chart-bar text-info"></i> Revenue Trends</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="revenueTrendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-chart-doughnut text-warning"></i> Property Types</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="propertyTypesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 3 -->
+<div class="row mb-4">
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-map-marked-alt text-danger"></i> Geographic Distribution (Top 10 Districts)</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="geographicChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-user-friends text-purple"></i> User Roles</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="userActivityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities & Quick Actions -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-history"></i> Recent Activities</h5>
+            </div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                {% if recent_logs %}
+                    <div class="list-group list-group-flush">
+                    {% for log in recent_logs %}
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <small class="text-muted"><i class="fas fa-clock"></i> {{ log.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                    <p class="mb-0 mt-1">{{ log.description }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">No recent activities</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-tools"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus"></i> Create User
+                    </a>
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-users"></i> Manage Users
+                    </a>
+                    <a href="{{ url_for('admin.properties') }}" class="btn btn-outline-success btn-lg">
+                        <i class="fas fa-home"></i> View Properties
+                    </a>
+                    <a href="{{ url_for('admin.mutations') }}" class="btn btn-outline-info btn-lg">
+                        <i class="fas fa-exchange-alt"></i> View Mutations
+                    </a>
+                    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-clipboard-list"></i> Audit Logs
+                    </a>
+                    <a href="{{ url_for('admin.reports') }}" class="btn btn-outline-warning btn-lg">
+                        <i class="fas fa-file-alt"></i> Generate Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Chart.js default configuration
+Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+Chart.defaults.color = '#666';
+
+let charts = {};
+
+// Initialize all charts
+document.addEventListener('DOMContentLoaded', function() {
+    loadAllCharts();
+});
+
+function loadAllCharts() {
+    loadPropertyTrendsChart();
+    loadPropertyStatusChart();
+    loadRevenueTrendsChart();
+    loadPropertyTypesChart();
+    loadGeographicChart();
+    loadUserActivityChart();
+}
+
+// 1. Property Registration Trends (Line Chart)
+function loadPropertyTrendsChart() {
+    fetch('{{ url_for("admin.property_trends") }}')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('propertyTrendsChart').getContext('2d');
+            
+            if (charts.propertyTrends) charts.propertyTrends.destroy();
+            
+            charts.propertyTrends = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Properties Registered',
+                        data: data.values,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error loading property trends:', error));
+}
+
+// 2. Property Status Distribution (Doughnut Chart)
+function loadPropertyStatusChart() {
+    fetch('{{ url_for("admin.property_status_distribution") }}')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('propertyStatusChart').getContext('2d');
+            
+            if (charts.propertyStatus) charts.propertyStatus.destroy();
+            
+            const colors = {
+                'approved': 'rgb(75, 192, 192)',
+                'pending': 'rgb(255, 205, 86)',
+                'rejected': 'rgb(255, 99, 132)',
+                'draft': 'rgb(201, 203, 207)'
+            };
+            
+            const backgroundColors = data.labels.map(label => colors[label] || 'rgb(153, 102, 255)');
+            
+            charts.propertyStatus = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.labels.map(l => l.charAt(0).toUpperCase() + l.slice(1)),
+                    datasets: [{
+                        data: data.values,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return label + ': ' + value + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error loading property status:', error));
+}
+
+// 3. Revenue Trends (Bar Chart)
+function loadRevenueTrendsChart() {
+    fetch('{{ url_for("admin.revenue_trends") }}')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('revenueTrendsChart').getContext('2d');
+            
+            if (charts.revenueTrends) charts.revenueTrends.destroy();
+            
+            charts.revenueTrends = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: data.values,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgb(54, 162, 235)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '₹' + context.parsed.y.toLocaleString('en-IN');
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + (value/1000) + 'K';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error loading revenue trends:', error));
+}
+
+// 4. Property Types (Pie Chart)
+function loadPropertyTypesChart() {
+    fetch('{{ url_for("admin.property_type_distribution") }}')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('propertyTypesChart').getContext('2d');
+            
+            if (charts.propertyTypes) charts.propertyTypes.destroy();
+            
+            const colors = [
+                'rgb(255, 99, 132)',
+                'rgb(54, 162, 235)',
+                'rgb(255, 205, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(153, 102, 255)',
+                'rgb(255, 159, 64)'
+            ];
+            
+            charts.propertyTypes = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.values,
+                        backgroundColor: colors.slice(0, data.labels.length),
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return label + ': ' + value + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error loading property types:', error));
+}
+
+// 5. Geographic Distribution (Horizontal Bar Chart)
+function loadGeographicChart() {
+    fetch('{{ url_for("admin.geographic_distribution") }}')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('geographicChart').getContext('2d');
+            
+            if (charts.geographic) charts.geographic.destroy();
+            
+            charts.geographic = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Properties',
+                        data: data.values,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 205, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(199, 199, 199, 0.7)',
+                            'rgba(83, 102, 255, 0.7)',
+                            'rgba(255, 99, 255, 0.7)',
+                            'rgba(99, 255, 132, 0.7)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error loading geographic distribution:', error));
+}
+
+// 6. User Activity (Polar Area Chart)
+function loadUserActivityChart() {
+    fetch('{{ url_for("admin.user_activity") }}')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('userActivityChart').getContext('2d');
+            
+            if (charts.userActivity) charts.userActivity.destroy();
+            
+            const colors = [
+                'rgba(255, 99, 132, 0.7)',
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 205, 86, 0.7)',
+                'rgba(75, 192, 192, 0.7)'
+            ];
+            
+            charts.userActivity = new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    labels: data.labels.map(l => l.charAt(0).toUpperCase() + l.slice(1)),
+                    datasets: [{
+                        data: data.values,
+                        backgroundColor: colors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error loading user activity:', error));
+}
+
+// Refresh dashboard function
+function refreshDashboard() {
+    // Show loading state
+    const refreshBtn = document.querySelector('button[onclick="refreshDashboard()"]');
+    const originalHTML = refreshBtn.innerHTML;
+    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    refreshBtn.disabled = true;
+    
+    // Reload all charts
+    loadAllCharts();
+    
+    // Reset button after 2 seconds
+    setTimeout(() => {
+        refreshBtn.innerHTML = originalHTML;
+        refreshBtn.disabled = false;
+        
+        // Show success message
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+        alert.style.zIndex = '9999';
+        alert.innerHTML = `
+            <i class="fas fa-check-circle"></i> Dashboard refreshed successfully!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alert);
+        
+        setTimeout(() => alert.remove(), 3000);
+    }, 2000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,13 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>Pending Mutations</h2>
+<div class="card">
+    <div class="card-body">
+        <table class="table"><thead><tr><th>Number</th><th>Type</th><th>Date</th><th>Action</th></tr></thead><tbody>
+        {% for mutation in mutations.items %}
+        <tr><td>{{ mutation.mutation_number }}</td><td>{{ mutation.mutation_type }}</td><td>{{ mutation.created_at.strftime('%Y-%m-%d') }}</td><td><a href="{{ url_for('officer.view_mutation', mutation_id=mutation.id) }}" class="btn btn-sm btn-primary">Review</a></td></tr>
+        {% endfor %}
+        </tbody></table>
+    </div>
+</div>
+{% endblock %}

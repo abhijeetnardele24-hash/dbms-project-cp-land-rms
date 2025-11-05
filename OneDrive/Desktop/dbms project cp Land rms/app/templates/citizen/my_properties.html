@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>🏠 My Properties</h2>
+        <a href="{{ url_for('citizen.register_property') }}" class="btn btn-primary">➕ Register New Property</a>
+    </div>
+    
+    {% if properties %}
+    <div class="row">
+    {% for property in properties %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title mb-0">📋 {{ property.ulpin or 'Pending ULPIN' }}</h5>
+                    <span class="badge {% if property.status == 'approved' %}bg-success{% elif property.status == 'pending' %}bg-warning{% elif property.status == 'rejected' %}bg-danger{% else %}bg-secondary{% endif %}">
+                        {{ property.status|upper }}
+                    </span>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-2">
+                    <strong>📍 Location:</strong><br>
+                    <small class="text-muted">{{ property.village_city }}, {{ property.district }}, {{ property.state }}</small>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>📏 Area:</strong><br>
+                    <span class="text-primary fw-bold">{{ property.area }} {{ property.area_unit|upper }}</span>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>🏘️ Type:</strong><br>
+                    <small>{{ property.property_type|capitalize if property.property_type else 'N/A' }}</small>
+                </div>
+                
+                {% if property.market_value %}
+                <div class="mb-3">
+                    <strong>💰 Market Value:</strong><br>
+                    <span class="text-success">₹ {{ "{:,.0f}".format(property.market_value) }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('citizen.property_detail', property_id=property.id) }}" class="btn btn-primary btn-sm">
+                        🔍 View Full Details
+                    </a>
+                    {% if property.status == 'approved' %}
+                    <a href="{{ url_for('citizen.submit_mutation') }}" class="btn btn-outline-secondary btn-sm">
+                        🔄 Request Mutation
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-footer text-muted small">
+                <small>📅 Registered: {{ property.created_at.strftime('%d-%m-%Y') if property.created_at else 'N/A' }}</small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        <h4>🌐 No properties registered yet</h4>
+        <p>Click the "Register New Property" button above to get started.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

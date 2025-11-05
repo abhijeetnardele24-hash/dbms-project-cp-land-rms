@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% block title %}Registrar Dashboard - {{ app_name }}{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-tachometer-alt"></i> Registrar Dashboard</h2>
+
+<!-- Quick Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-clock"></i> Pending</h5>
+                <h2 class="mb-0">{{ pending_registrations }}</h2>
+                <a href="{{ url_for('registrar.pending_registrations') }}" class="btn btn-light btn-sm mt-2">Review</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-eye"></i> Under Review</h5>
+                <h2 class="mb-0">{{ under_review }}</h2>
+                <small class="text-white">Properties</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-check-circle"></i> Approved</h5>
+                <h2 class="mb-0">{{ approved_properties }}</h2>
+                <small class="text-white">Total approved</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-building"></i> Total Properties</h5>
+                <h2 class="mb-0">{{ total_properties }}</h2>
+                <a href="{{ url_for('registrar.all_properties') }}" class="btn btn-light btn-sm mt-2">View All</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mutations & Advanced Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-times-circle"></i> Rejected</h5>
+                <h2 class="mb-0">{{ rejected_properties }}</h2>
+                <small class="text-white">Properties</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-secondary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-exchange-alt"></i> Pending Mutations</h5>
+                <h2 class="mb-0">{{ pending_mutations }}</h2>
+                <a href="{{ url_for('registrar.list_mutations') }}" class="btn btn-light btn-sm mt-2">View</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-award"></i> My Approvals</h5>
+                <h2 class="mb-0">{{ my_approvals }}</h2>
+                <a href="{{ url_for('registrar.my_approvals') }}" class="btn btn-light btn-sm mt-2">History</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-users"></i> Citizens</h5>
+                <h2 class="mb-0">{{ total_citizens }}</h2>
+                <small class="text-white">Registered users</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Properties by Type & Status -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Properties by Type</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ptype, count in property_by_type %}
+                            <tr>
+                                <td><span class="badge bg-info">{{ ptype or 'Unknown' }}</span></td>
+                                <td>{{ count }}</td>
+                                <td>{{ "%.1f"|format((count / total_properties * 100) if total_properties > 0 else 0) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Properties by Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for status, count in property_by_status %}
+                            <tr>
+                                <td>
+                                    {% if status == 'approved' %}
+                                    <span class="badge bg-success">{{ status }}</span>
+                                    {% elif status == 'pending' %}
+                                    <span class="badge bg-warning">{{ status }}</span>
+                                    {% elif status == 'rejected' %}
+                                    <span class="badge bg-danger">{{ status }}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ count }}</td>
+                                <td>{{ "%.1f"|format((count / total_properties * 100) if total_properties > 0 else 0) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-history"></i> Recent Property Registrations</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for property in recent_properties %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ property.ulpin or 'Pending ULPIN' }}</strong><br>
+                            <small class="text-muted">{{ property.village_city }}, {{ property.district }}</small><br>
+                            <small class="text-muted">{{ property.area }} {{ property.area_unit }} - {{ property.property_type }}</small>
+                        </div>
+                        <div>
+                            <span class="badge bg-{{ 'success' if property.status == 'approved' else 'warning' if property.status == 'pending' else 'info' }}">{{ property.status }}</span><br>
+                            <small class="text-muted">{{ property.created_at.strftime('%Y-%m-%d') }}</small>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mb-0">No recent properties</div>
+                    {% endfor %}
+                </div>
+                <div class="mt-3 text-center">
+                    <a href="{{ url_for('registrar.all_properties') }}" class="btn btn-primary btn-sm">View All Properties</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-exchange-alt"></i> Recent Mutation Requests</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for mutation in recent_mutations %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ mutation.mutation_number or 'Pending' }}</strong><br>
+                            <small class="text-muted">Type: {{ mutation.mutation_type }}</small><br>
+                            <small class="text-muted">Property ID: {{ mutation.property_id }}</small>
+                        </div>
+                        <div>
+                            <span class="badge bg-{{ 'success' if mutation.status == 'approved' else 'warning' if mutation.status == 'pending' else 'info' }}">{{ mutation.status }}</span><br>
+                            <small class="text-muted">{{ mutation.created_at.strftime('%Y-%m-%d') }}</small>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mb-0">No recent mutations</div>
+                    {% endfor %}
+                </div>
+                <div class="mt-3 text-center">
+                    <a href="{{ url_for('registrar.list_mutations') }}" class="btn btn-info btn-sm">View All Mutations</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- My Recent Approvals -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h5 class="mb-0"><i class="fas fa-user-check"></i> My Recent Approvals</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ULPIN</th>
+                                <th>Location</th>
+                                <th>Type</th>
+                                <th>Area</th>
+                                <th>Status</th>
+                                <th>Approved On</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for property in my_recent_approvals %}
+                            <tr>
+                                <td><strong>{{ property.ulpin }}</strong></td>
+                                <td>{{ property.village_city }}, {{ property.district }}</td>
+                                <td><span class="badge bg-secondary">{{ property.property_type }}</span></td>
+                                <td>{{ property.area }} {{ property.area_unit }}</td>
+                                <td><span class="badge bg-success">{{ property.status }}</span></td>
+                                <td>{{ property.approval_date.strftime('%Y-%m-%d %H:%M') if property.approval_date else '-' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No approvals yet</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>Payments</h2>
+<div class="card">
+    <div class="card-body">
+        <table class="table"><thead><tr><th>Reference</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>
+        {% for payment in payments.items %}
+        <tr><td>{{ payment.payment_reference }}</td><td>{{ payment.payment_type }}</td><td>₹{{ payment.amount }}</td><td><span class="badge bg-success">{{ payment.status }}</span></td><td>{{ payment.payment_date.strftime('%Y-%m-%d') }}</td></tr>
+        {% endfor %}
+        </tbody></table>
+    </div>
+</div>
+{% endblock %}

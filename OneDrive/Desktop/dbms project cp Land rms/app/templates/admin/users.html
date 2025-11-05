@@ -1,0 +1,23 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>User Management</h2>
+<a href="{{ url_for('admin.create_user') }}" class="btn btn-primary mb-3">Create New User</a>
+<div class="card">
+    <div class="card-body">
+        <table class="table">
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+            {% for user in users.items %}
+            <tr>
+                <td>{{ user.full_name }}</td>
+                <td>{{ user.email }}</td>
+                <td><span class="badge bg-info">{{ user.role }}</span></td>
+                <td><span class="badge bg-{{ 'success' if user.is_active else 'danger' }}">{{ 'Active' if user.is_active else 'Inactive' }}</span></td>
+                <td><a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-sm btn-warning">Edit</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

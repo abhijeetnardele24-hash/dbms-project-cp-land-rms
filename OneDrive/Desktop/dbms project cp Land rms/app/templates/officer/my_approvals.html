@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>My Approvals</h2>
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Mutation Number</th>
+                    <th>Property ULPIN</th>
+                    <th>Type</th>
+                    <th>Requester</th>
+                    <th>Approved On</th>
+                    <th>Certificate Number</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mutation in mutations.items %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('officer.view_mutation', mutation_id=mutation.id) }}" class="text-primary fw-bold">
+                            {{ mutation.mutation_number }}
+                        </a>
+                    </td>
+                    <td>{{ mutation.property.ulpin if mutation.property else 'N/A' }}</td>
+                    <td><span class="badge bg-secondary">{{ mutation.mutation_type }}</span></td>
+                    <td>{{ mutation.requester.full_name if mutation.requester else 'N/A' }}</td>
+                    <td>{{ mutation.approval_date.strftime('%Y-%m-%d') if mutation.approval_date else 'N/A' }}</td>
+                    <td>
+                        {% if mutation.mutation_certificate_number %}
+                            <span class="badge bg-success">{{ mutation.mutation_certificate_number }}</span>
+                        {% else %}
+                            <span class="badge bg-warning">Not Generated</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('officer.view_mutation', mutation_id=mutation.id) }}" 
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-eye"></i> View Details
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-2">No approved mutations yet.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Pagination -->
+        {% if mutations.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {% if not mutations.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('officer.my_approvals', page=mutations.prev_num) if mutations.has_prev else '#' }}">
+                        Previous
+                    </a>
+                </li>
+                
+                {% for page_num in mutations.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == mutations.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('officer.my_approvals', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                
+                <li class="page-item {% if not mutations.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('officer.my_approvals', page=mutations.next_num) if mutations.has_next else '#' }}">
+                        Next
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

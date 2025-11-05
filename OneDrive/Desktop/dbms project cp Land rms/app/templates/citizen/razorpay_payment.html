@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+{% block title %}Razorpay Payment Gateway - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .razorpay-container {
+        max-width: 600px;
+        margin: 50px auto;
+    }
+    .payment-header {
+        background: linear-gradient(135deg, #3395ff 0%, #1c6fd4 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px 10px 0 0;
+        text-align: center;
+    }
+    .payment-body {
+        background: white;
+        padding: 30px;
+        border: 2px solid #e8e8e8;
+        border-top: none;
+        border-radius: 0 0 10px 10px;
+    }
+    .amount-display {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #3395ff;
+        margin: 20px 0;
+    }
+    .payment-option {
+        border: 2px solid #e8e8e8;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .payment-option:hover {
+        border-color: #3395ff;
+        background: #f8f9fa;
+    }
+    .payment-option.active {
+        border-color: #3395ff;
+        background: #e7f3ff;
+    }
+    .payment-option input[type="radio"] {
+        margin-right: 10px;
+    }
+    .qr-code-container {
+        text-align: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+    .qr-placeholder {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto;
+        background: white;
+        border: 2px dashed #3395ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+    }
+    .bank-details {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+    }
+    .razorpay-btn {
+        background: #3395ff;
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        width: 100%;
+        margin-top: 20px;
+        transition: all 0.3s;
+    }
+    .razorpay-btn:hover {
+        background: #1c6fd4;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(51, 149, 255, 0.3);
+    }
+    .secure-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #28a745;
+        margin-top: 15px;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="razorpay-container">
+    <div class="payment-header">
+        <img src="https://razorpay.com/assets/razorpay-glyph.svg" alt="Razorpay" style="width: 50px; height: 50px; filter: brightness(0) invert(1);">
+        <h3 class="mt-3">Razorpay Secure Payment</h3>
+        <p class="mb-0">{{ app_name }}</p>
+    </div>
+    
+    <div class="payment-body">
+        <div class="text-center">
+            <h5>Payment Amount</h5>
+            <div class="amount-display">₹{{ "{:,.2f}".format(payment.amount) }}</div>
+            <p class="text-muted">
+                <strong>Payment Reference:</strong> {{ payment.payment_reference }}<br>
+                <strong>Type:</strong> {{ payment.payment_type|replace('_', ' ')|title }}
+            </p>
+        </div>
+        
+        <hr>
+        
+        <form id="paymentForm" method="POST" action="{{ url_for('citizen.process_payment', payment_id=payment.id) }}">
+            <input type="hidden" name="transaction_id" value="{{ transaction_id }}">
+            
+            <h6 class="mb-3"><i class="fas fa-wallet"></i> Select Payment Method</h6>
+            
+            <!-- UPI Payment -->
+            <div class="payment-option" onclick="selectPayment('upi')">
+                <input type="radio" name="payment_method" value="online" id="upi" checked>
+                <label for="upi" class="mb-0" style="cursor: pointer;">
+                    <i class="fas fa-qrcode"></i> <strong>UPI</strong> (Google Pay, PhonePe, Paytm)
+                </label>
+            </div>
+            
+            <div id="upi-details" class="mt-3">
+                <div class="qr-code-container">
+                    <h6>Scan QR Code to Pay</h6>
+                    <div class="qr-placeholder">
+                        <div>
+                            <i class="fas fa-qrcode fa-5x text-primary mb-2"></i>
+                            <p class="text-muted"><small>Simulated QR Code</small></p>
+                        </div>
+                    </div>
+                    <p class="mt-3 text-muted">
+                        <small>UPI ID: merchant@razorpay<br>
+                        Amount: ₹{{ "{:,.2f}".format(payment.amount) }}</small>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Net Banking -->
+            <div class="payment-option" onclick="selectPayment('netbanking')">
+                <input type="radio" name="payment_method" value="online" id="netbanking">
+                <label for="netbanking" class="mb-0" style="cursor: pointer;">
+                    <i class="fas fa-university"></i> <strong>Net Banking</strong>
+                </label>
+            </div>
+            
+            <div id="netbanking-details" class="mt-3" style="display: none;">
+                <div class="bank-details">
+                    <label class="form-label"><strong>Select Your Bank</strong></label>
+                    <select class="form-select">
+                        <option>State Bank of India</option>
+                        <option>HDFC Bank</option>
+                        <option>ICICI Bank</option>
+                        <option>Axis Bank</option>
+                        <option>Punjab National Bank</option>
+                        <option>Bank of Baroda</option>
+                        <option>Canara Bank</option>
+                        <option>Union Bank of India</option>
+                        <option>Other Banks</option>
+                    </select>
+                    <small class="text-muted">You will be redirected to your bank's website</small>
+                </div>
+            </div>
+            
+            <!-- Card Payment -->
+            <div class="payment-option" onclick="selectPayment('card')">
+                <input type="radio" name="payment_method" value="card" id="card">
+                <label for="card" class="mb-0" style="cursor: pointer;">
+                    <i class="fas fa-credit-card"></i> <strong>Debit/Credit Card</strong>
+                </label>
+            </div>
+            
+            <div id="card-details" class="mt-3" style="display: none;">
+                <div class="bank-details">
+                    <div class="mb-3">
+                        <label class="form-label">Card Number</label>
+                        <input type="text" class="form-control" placeholder="1234 5678 9012 3456" maxlength="19">
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <label class="form-label">Expiry Date</label>
+                            <input type="text" class="form-control" placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">CVV</label>
+                            <input type="password" class="form-control" placeholder="123" maxlength="3">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Wallet -->
+            <div class="payment-option" onclick="selectPayment('wallet')">
+                <input type="radio" name="payment_method" value="online" id="wallet">
+                <label for="wallet" class="mb-0" style="cursor: pointer;">
+                    <i class="fas fa-mobile-alt"></i> <strong>Wallets</strong> (Paytm, PhonePe, Amazon Pay)
+                </label>
+            </div>
+            
+            <div id="wallet-details" class="mt-3" style="display: none;">
+                <div class="bank-details">
+                    <label class="form-label"><strong>Select Wallet</strong></label>
+                    <select class="form-select">
+                        <option>Paytm</option>
+                        <option>PhonePe</option>
+                        <option>Amazon Pay</option>
+                        <option>Mobikwik</option>
+                        <option>Freecharge</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit" class="razorpay-btn">
+                <i class="fas fa-lock"></i> Pay ₹{{ "{:,.2f}".format(payment.amount) }} Securely
+            </button>
+            
+            <div class="secure-badge">
+                <i class="fas fa-shield-alt me-2"></i>
+                <small>Secured by Razorpay | 256-bit SSL Encryption</small>
+            </div>
+            
+            <div class="text-center mt-3">
+                <a href="{{ url_for('citizen.payments') }}" class="btn btn-link text-muted">
+                    <i class="fas fa-times"></i> Cancel Payment
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <div class="alert alert-info mt-3">
+        <i class="fas fa-info-circle"></i> <strong>Note:</strong> This is a simulated payment gateway for demonstration purposes. In production, this would integrate with actual Razorpay API.
+    </div>
+</div>
+
+<script>
+function selectPayment(method) {
+    // Hide all details
+    document.getElementById('upi-details').style.display = 'none';
+    document.getElementById('netbanking-details').style.display = 'none';
+    document.getElementById('card-details').style.display = 'none';
+    document.getElementById('wallet-details').style.display = 'none';
+    
+    // Remove active class from all options
+    document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('active'));
+    
+    // Show selected details
+    if (method === 'upi') {
+        document.getElementById('upi-details').style.display = 'block';
+        document.getElementById('upi').checked = true;
+    } else if (method === 'netbanking') {
+        document.getElementById('netbanking-details').style.display = 'block';
+        document.getElementById('netbanking').checked = true;
+    } else if (method === 'card') {
+        document.getElementById('card-details').style.display = 'block';
+        document.getElementById('card').checked = true;
+    } else if (method === 'wallet') {
+        document.getElementById('wallet-details').style.display = 'block';
+        document.getElementById('wallet').checked = true;
+    }
+    
+    // Add active class to selected option
+    event.currentTarget.classList.add('active');
+}
+
+// Set default active
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('.payment-option').classList.add('active');
+});
+
+// Form submission with loading
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
+    const btn = this.querySelector('.razorpay-btn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Payment...';
+    btn.disabled = true;
+});
+</script>
+{% endblock %}

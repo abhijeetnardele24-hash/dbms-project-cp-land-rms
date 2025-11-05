@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-file-alt"></i> Mutation Details</h2>
+        <a href="{{ url_for('citizen.my_mutations') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to My Mutations
+        </a>
+    </div>
+    
+    <!-- Mutation Information -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-info-circle"></i> Mutation Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="40%">Mutation Number</th>
+                            <td><span class="badge bg-info fs-6">{{ mutation.mutation_number }}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Mutation Type</th>
+                            <td><span class="badge bg-secondary">{{ mutation.mutation_type }}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td>
+                                {% if mutation.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark fs-6">Pending</span>
+                                {% elif mutation.status == 'approved' %}
+                                    <span class="badge bg-success fs-6">Approved</span>
+                                {% elif mutation.status == 'rejected' %}
+                                    <span class="badge bg-danger fs-6">Rejected</span>
+                                {% elif mutation.status == 'under_review' %}
+                                    <span class="badge bg-info fs-6">Under Review</span>
+                                {% else %}
+                                    <span class="badge bg-secondary fs-6">{{ mutation.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Submitted Date</th>
+                            <td>{{ mutation.created_at.strftime('%d-%m-%Y %H:%M') if mutation.created_at else 'N/A' }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="40%">Previous Owners</th>
+                            <td>{{ mutation.previous_owners or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th>New Owners</th>
+                            <td>{{ mutation.new_owners or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Mutation Fee</th>
+                            <td class="text-success"><strong>₹{{ "{:,.2f}".format(mutation.mutation_fee) if mutation.mutation_fee else '0.00' }}</strong></td>
+                        </tr>
+                        {% if mutation.status == 'approved' and mutation.approval_date %}
+                        <tr>
+                            <th>Approval Date</th>
+                            <td>{{ mutation.approval_date.strftime('%d-%m-%Y %H:%M') }}</td>
+                        </tr>
+                        {% elif mutation.status == 'rejected' and mutation.rejection_date %}
+                        <tr>
+                            <th>Rejection Date</th>
+                            <td>{{ mutation.rejection_date.strftime('%d-%m-%Y %H:%M') }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-12">
+                    <h6 class="text-primary"><i class="fas fa-align-left"></i> Description</h6>
+                    <p class="text-muted">{{ mutation.description or 'No description provided' }}</p>
+                    
+                    <h6 class="text-primary mt-3"><i class="fas fa-question-circle"></i> Reason</h6>
+                    <p class="text-muted">{{ mutation.reason or 'No reason provided' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Property Information -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-home"></i> Property Information</h5>
+        </div>
+        <div class="card-body">
+            {% if mutation.property %}
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-primary">Basic Information</h6>
+                    <table class="table table-sm table-bordered">
+                        <tr>
+                            <td><strong>ULPIN:</strong></td>
+                            <td>{{ mutation.property.ulpin or 'Not Generated' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Property Type:</strong></td>
+                            <td><span class="badge bg-info">{{ mutation.property.property_type }}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Sub Type:</strong></td>
+                            <td>{{ mutation.property.sub_property_type or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Status:</strong></td>
+                            <td><span class="badge bg-{{ 'success' if mutation.property.status == 'approved' else 'warning' }}">{{ mutation.property.status }}</span></td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="col-md-6">
+                    <h6 class="text-primary">Location Details</h6>
+                    <table class="table table-sm table-bordered">
+                        <tr>
+                            <td><strong>Village/City:</strong></td>
+                            <td>{{ mutation.property.village_city }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>District:</strong></td>
+                            <td>{{ mutation.property.district }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>State:</strong></td>
+                            <td>{{ mutation.property.state }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pincode:</strong></td>
+                            <td>{{ mutation.property.pincode or 'N/A' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <h6 class="text-primary">Area & Measurements</h6>
+                    <table class="table table-sm table-bordered">
+                        <tr>
+                            <td><strong>Total Area:</strong></td>
+                            <td>{{ mutation.property.area }} {{ mutation.property.area_unit }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Survey Number:</strong></td>
+                            <td>{{ mutation.property.survey_number or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Plot Number:</strong></td>
+                            <td>{{ mutation.property.plot_number or 'N/A' }}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="col-md-6">
+                    <h6 class="text-primary">Valuation</h6>
+                    <table class="table table-sm table-bordered">
+                        {% if mutation.property.market_value %}
+                        <tr>
+                            <td><strong>Market Value:</strong></td>
+                            <td class="text-success"><strong>₹{{ "{:,.2f}".format(mutation.property.market_value) }}</strong></td>
+                        </tr>
+                        {% endif %}
+                        {% if mutation.property.registered_value %}
+                        <tr>
+                            <td><strong>Registered Value:</strong></td>
+                            <td>₹{{ "{:,.2f}".format(mutation.property.registered_value) }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+
+            {% if mutation.property.latitude and mutation.property.longitude %}
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h6 class="text-primary">GPS Location</h6>
+                    <p><strong>Coordinates:</strong> {{ mutation.property.latitude }}, {{ mutation.property.longitude }}</p>
+                    <div id="map" style="height: 350px; border: 2px solid #ddd; border-radius: 5px;"></div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <p class="text-danger">Property information not available</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Processing Status & Officer Comments -->
+    {% if mutation.status == 'approved' or mutation.status == 'rejected' %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-{{ 'success' if mutation.status == 'approved' else 'danger' }} text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-{{ 'check-circle' if mutation.status == 'approved' else 'times-circle' }}"></i> 
+                Processing Status
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Decision:</strong> 
+                        <span class="badge bg-{{ 'success' if mutation.status == 'approved' else 'danger' }} fs-6">
+                            {{ mutation.status.upper() }}
+                        </span>
+                    </p>
+                    <p><strong>Processed By:</strong> {{ mutation.processed_by_user.full_name if mutation.processed_by_user else 'N/A' }}</p>
+                    <p><strong>Processing Date:</strong> {{ mutation.processing_date.strftime('%d-%m-%Y %H:%M') if mutation.processing_date else 'N/A' }}</p>
+                </div>
+                <div class="col-md-6">
+                    {% if mutation.status == 'approved' and mutation.mutation_certificate_number %}
+                    <p><strong>Certificate Number:</strong> 
+                        <span class="badge bg-success fs-6">{{ mutation.mutation_certificate_number }}</span>
+                    </p>
+                    {% if mutation.certificate_issued_date %}
+                    <p><strong>Certificate Issued:</strong> {{ mutation.certificate_issued_date.strftime('%d-%m-%Y') }}</p>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-12">
+                    <h6 class="text-primary"><i class="fas fa-comment"></i> Officer's Comments</h6>
+                    <div class="alert alert-{{ 'success' if mutation.status == 'approved' else 'danger' }}">
+                        <p class="mb-0">{{ mutation.officer_comments or 'No comments provided' }}</p>
+                    </div>
+                    
+                    {% if mutation.status == 'rejected' and mutation.rejection_reason %}
+                    <h6 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Rejection Reason</h6>
+                    <div class="alert alert-danger">
+                        <p class="mb-0">{{ mutation.rejection_reason }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Timeline (Optional future enhancement) -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-history"></i> Mutation Timeline</h5>
+        </div>
+        <div class="card-body">
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-marker bg-primary"></div>
+                    <div class="timeline-content">
+                        <h6 class="mb-1">Mutation Submitted</h6>
+                        <p class="text-muted mb-0">{{ mutation.created_at.strftime('%d-%m-%Y %H:%M') if mutation.created_at else 'N/A' }}</p>
+                    </div>
+                </div>
+                
+                {% if mutation.processing_date %}
+                <div class="timeline-item">
+                    <div class="timeline-marker bg-warning"></div>
+                    <div class="timeline-content">
+                        <h6 class="mb-1">Under Review</h6>
+                        <p class="text-muted mb-0">{{ mutation.processing_date.strftime('%d-%m-%Y %H:%M') }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if mutation.status == 'approved' and mutation.approval_date %}
+                <div class="timeline-item">
+                    <div class="timeline-marker bg-success"></div>
+                    <div class="timeline-content">
+                        <h6 class="mb-1">Mutation Approved</h6>
+                        <p class="text-muted mb-0">{{ mutation.approval_date.strftime('%d-%m-%Y %H:%M') }}</p>
+                    </div>
+                </div>
+                {% elif mutation.status == 'rejected' and mutation.rejection_date %}
+                <div class="timeline-item">
+                    <div class="timeline-marker bg-danger"></div>
+                    <div class="timeline-content">
+                        <h6 class="mb-1">Mutation Rejected</h6>
+                        <p class="text-muted mb-0">{{ mutation.rejection_date.strftime('%d-%m-%Y %H:%M') }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-4">
+        <a href="{{ url_for('citizen.my_mutations') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to My Mutations
+        </a>
+        {% if mutation.status == 'approved' %}
+        <button class="btn btn-success" onclick="window.print()">
+            <i class="fas fa-print"></i> Print Certificate
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Leaflet Map Script -->
+{% if mutation.property and mutation.property.latitude and mutation.property.longitude %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Initialize map
+    var map = L.map('map').setView([{{ mutation.property.latitude }}, {{ mutation.property.longitude }}], 15);
+    
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Add marker
+    var marker = L.marker([{{ mutation.property.latitude }}, {{ mutation.property.longitude }}]).addTo(map);
+    marker.bindPopup("<b>{{ mutation.property.village_city }}</b><br>{{ mutation.property.property_type }}").openPopup();
+</script>
+{% endif %}
+
+<!-- Timeline CSS -->
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 40px;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 30px;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -34px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px #dee2e6;
+    }
+    
+    .timeline-content {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    @media print {
+        .btn, .timeline, .card-header {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}

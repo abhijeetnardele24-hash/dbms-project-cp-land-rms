@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="fas fa-exchange-alt"></i> Submit Mutation Request</h2>
+    
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        <h5>Please fix the following errors:</h5>
+        <ul>
+        {% for field, errors in form.errors.items() %}
+            {% for error in errors %}
+                <li><strong>{{ form[field].label.text }}:</strong> {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-file-alt"></i> Mutation Request Form</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                
+                <div class="mb-3">
+                    {{ form.property_id.label(class="form-label") }}<span class="text-danger">*</span>
+                    {{ form.property_id(class="form-select") }}
+                    <small class="text-muted">Select the property for which you want to request mutation</small>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.mutation_type.label(class="form-label") }}<span class="text-danger">*</span>
+                    {{ form.mutation_type(class="form-select") }}
+                    <small class="text-muted">Select the type of mutation request</small>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.description.label(class="form-label") }}<span class="text-danger">*</span>
+                    {{ form.description(class="form-control", rows=4, placeholder="Provide detailed description of the mutation request (minimum 20 characters)") }}
+                    <small class="text-muted">Minimum 20 characters required</small>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.reason.label(class="form-label") }}
+                    {{ form.reason(class="form-control", rows=3, placeholder="Reason for requesting this mutation (optional)") }}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.previous_owners.label(class="form-label") }}
+                    {{ form.previous_owners(class="form-control", rows=2, placeholder="Names of previous owners (optional)") }}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.new_owners.label(class="form-label") }}
+                    {{ form.new_owners(class="form-control", rows=2, placeholder="Names of new owners (optional)") }}
+                </div>
+                
+                <hr>
+                <h5 class="mb-3"><i class="fas fa-paperclip"></i> Supporting Documents (Optional)</h5>
+                
+                <div class="mb-3">
+                    {{ form.document1.label(class="form-label") }}
+                    {{ form.document1(class="form-control") }}
+                    <small class="text-muted">Accepted formats: PDF, JPG, PNG</small>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.document2.label(class="form-label") }}
+                    {{ form.document2(class="form-control") }}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.document3.label(class="form-label") }}
+                    {{ form.document3(class="form-control") }}
+                </div>
+                
+                <hr>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-paper-plane"></i> Submit Request
+                    </button>
+                    <a href="{{ url_for('citizen.my_mutations') }}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="alert alert-info mt-4">
+        <i class="fas fa-info-circle"></i> <strong>Note:</strong> Your mutation request will be reviewed by an officer. You will be notified once the request is processed.
+    </div>
+</div>
+{% endblock %}

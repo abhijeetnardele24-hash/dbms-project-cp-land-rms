@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-receipt"></i> Payment Receipt</h2>
+        <a href="{{ url_for('citizen.payments') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Payment History
+        </a>
+    </div>
+    
+    <!-- Payment Receipt Card -->
+    <div class="card mb-4 shadow-lg" id="receipt">
+        <div class="card-header bg-gradient-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0"><i class="fas fa-file-invoice-dollar"></i> Land Registry Management System</h4>
+                    <p class="mb-0 small">Official Payment Receipt</p>
+                </div>
+                <div class="text-end">
+                    {% if payment.status == 'completed' %}
+                        <span class="badge bg-success fs-5">PAID</span>
+                    {% elif payment.status == 'pending' %}
+                        <span class="badge bg-warning text-dark fs-5">PENDING</span>
+                    {% else %}
+                        <span class="badge bg-danger fs-5">{{ payment.status.upper() }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body p-4">
+            <!-- Receipt Header -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5 class="text-primary mb-3">Receipt Information</h5>
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <td width="40%"><strong>Receipt Number:</strong></td>
+                            <td><span class="badge bg-info fs-6">{{ payment.receipt_number or payment.payment_reference }}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Payment Date:</strong></td>
+                            <td>{{ payment.payment_date.strftime('%d-%m-%Y %H:%M:%S') if payment.payment_date else 'N/A' }}</td>
+                        </tr>
+                        {% if payment.completed_date %}
+                        <tr>
+                            <td><strong>Completed Date:</strong></td>
+                            <td>{{ payment.completed_date.strftime('%d-%m-%Y %H:%M:%S') }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td><strong>Payment Reference:</strong></td>
+                            <td>{{ payment.payment_reference }}</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5 class="text-primary mb-3">Payer Information</h5>
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <td width="40%"><strong>Name:</strong></td>
+                            <td>{{ payment.user.full_name if payment.user else 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Email:</strong></td>
+                            <td>{{ payment.user.email if payment.user else 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phone:</strong></td>
+                            <td>{{ payment.user.phone if payment.user else 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>User ID:</strong></td>
+                            <td>{{ payment.user_id }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <hr>
+
+            <!-- Payment Details -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="text-primary mb-3">Payment Details</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Description</th>
+                                    <th width="20%">Type</th>
+                                    <th width="15%">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <strong>{{ payment.payment_type.replace('_', ' ').title() }}</strong>
+                                        {% if payment.description %}
+                                        <br><small class="text-muted">{{ payment.description }}</small>
+                                        {% endif %}
+                                        {% if payment.tax_year %}
+                                        <br><small class="text-muted">Tax Year: {{ payment.tax_year }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ payment.payment_type }}</td>
+                                    <td class="text-end"><strong>₹{{ "{:,.2f}".format(payment.amount) }}</strong></td>
+                                </tr>
+                                <tr class="table-light">
+                                    <td colspan="2" class="text-end"><strong>Total Amount:</strong></td>
+                                    <td class="text-end"><strong class="text-success fs-5">₹{{ "{:,.2f}".format(payment.amount) }}</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property Information -->
+            {% if payment.property %}
+            <hr>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="text-primary mb-3"><i class="fas fa-home"></i> Property Information</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-sm table-bordered">
+                                <tr>
+                                    <td width="40%"><strong>ULPIN:</strong></td>
+                                    <td>{{ payment.property.ulpin or 'Not Generated' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Property Type:</strong></td>
+                                    <td>{{ payment.property.property_type }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Survey Number:</strong></td>
+                                    <td>{{ payment.property.survey_number or 'N/A' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-sm table-bordered">
+                                <tr>
+                                    <td width="40%"><strong>Location:</strong></td>
+                                    <td>{{ payment.property.village_city }}, {{ payment.property.district }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>State:</strong></td>
+                                    <td>{{ payment.property.state }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Area:</strong></td>
+                                    <td>{{ payment.property.area }} {{ payment.property.area_unit }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Transaction Details -->
+            <hr>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5 class="text-primary mb-3">Transaction Information</h5>
+                    <table class="table table-sm table-bordered">
+                        <tr>
+                            <td width="40%"><strong>Payment Method:</strong></td>
+                            <td>
+                                {% if payment.payment_method == 'online' %}
+                                    <i class="fas fa-laptop text-primary"></i> Online
+                                {% elif payment.payment_method == 'cash' %}
+                                    <i class="fas fa-money-bill-wave text-success"></i> Cash
+                                {% elif payment.payment_method == 'cheque' %}
+                                    <i class="fas fa-money-check text-info"></i> Cheque
+                                {% elif payment.payment_method == 'card' %}
+                                    <i class="fas fa-credit-card text-warning"></i> Card
+                                {% elif payment.payment_method == 'upi' %}
+                                    <i class="fas fa-mobile-alt text-primary"></i> UPI
+                                {% else %}
+                                    {{ payment.payment_method }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% if payment.transaction_id %}
+                        <tr>
+                            <td><strong>Transaction ID:</strong></td>
+                            <td><code>{{ payment.transaction_id }}</code></td>
+                        </tr>
+                        {% endif %}
+                        {% if payment.payment_mode_details %}
+                        <tr>
+                            <td><strong>Mode Details:</strong></td>
+                            <td>{{ payment.payment_mode_details }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5 class="text-primary mb-3">Status Information</h5>
+                    <table class="table table-sm table-bordered">
+                        <tr>
+                            <td width="40%"><strong>Status:</strong></td>
+                            <td>
+                                {% if payment.status == 'completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% elif payment.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif payment.status == 'failed' %}
+                                    <span class="badge bg-danger">Failed</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ payment.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% if payment.receipt_issued_date %}
+                        <tr>
+                            <td><strong>Receipt Issued:</strong></td>
+                            <td>{{ payment.receipt_issued_date.strftime('%d-%m-%Y %H:%M') }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if payment.verified_by %}
+                        <tr>
+                            <td><strong>Verified By:</strong></td>
+                            <td>{{ payment.verified_by }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+
+            <!-- Verification Notice -->
+            {% if payment.status == 'completed' %}
+            <div class="alert alert-success" role="alert">
+                <i class="fas fa-check-circle"></i> 
+                <strong>Payment Verified</strong> - This is a computer-generated receipt and does not require a signature.
+            </div>
+            {% elif payment.status == 'pending' %}
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-clock"></i> 
+                <strong>Payment Pending</strong> - This payment is awaiting confirmation. Please complete the payment process.
+            </div>
+            {% endif %}
+
+            <!-- Footer Note -->
+            <div class="text-center mt-4 pt-3 border-top">
+                <p class="text-muted mb-1"><small>This is a computer-generated receipt. For any queries, please contact the Land Registry Office.</small></p>
+                <p class="text-muted mb-0"><small>Generated on: {{ payment.payment_date.strftime('%d-%m-%Y %H:%M:%S') if payment.payment_date }}</small></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-4">
+        <a href="{{ url_for('citizen.payments') }}" class="btn btn-secondary btn-lg">
+            <i class="fas fa-arrow-left"></i> Back to Payment History
+        </a>
+        <button onclick="window.print()" class="btn btn-primary btn-lg">
+            <i class="fas fa-print"></i> Print Receipt
+        </button>
+        <button onclick="downloadPDF()" class="btn btn-success btn-lg">
+            <i class="fas fa-download"></i> Download PDF
+        </button>
+    </div>
+</div>
+
+<!-- Print Styles -->
+<style>
+    @media print {
+        .btn, .navbar, .breadcrumb, .alert {
+            display: none !important;
+        }
+        .card {
+            border: 2px solid #000 !important;
+            box-shadow: none !important;
+        }
+        .card-header {
+            background-color: #007bff !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        body {
+            background: white !important;
+        }
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .table-borderless td {
+        padding: 0.5rem 0;
+    }
+</style>
+
+<script>
+    function downloadPDF() {
+        // Simple print to PDF functionality
+        alert('Please use your browser\'s Print function and select "Save as PDF" as the destination.');
+        window.print();
+    }
+</script>
+{% endblock %}

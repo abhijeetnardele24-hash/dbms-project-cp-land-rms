@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Pending Registrations - Registrar{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-clock"></i> Pending Property Registrations</h2>
+
+<div class="card">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0"><i class="fas fa-list"></i> Properties Awaiting Review ({{ properties.total }} total)</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Survey #</th>
+                        <th>Location</th>
+                        <th>Type</th>
+                        <th>Area</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Days Pending</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for property in properties.items %}
+                    <tr>
+                        <td><strong>{{ property.survey_number or 'N/A' }}</strong></td>
+                        <td>{{ property.village_city }}, {{ property.district }}</td>
+                        <td><span class="badge bg-secondary">{{ property.property_type }}</span></td>
+                        <td>{{ property.area }} {{ property.area_unit }}</td>
+                        <td>
+                            {% if property.status == 'pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% elif property.status == 'under_review' %}
+                            <span class="badge bg-info">Under Review</span>
+                            {% elif property.status == 'documents_verified' %}
+                            <span class="badge bg-primary">Docs Verified</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ property.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ property.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% set days_pending = (now - property.created_at).days if now else 0 %}
+                            <span class="badge bg-{{ 'danger' if days_pending > 7 else 'warning' if days_pending > 3 else 'info' }}">
+                                {{ days_pending }} days
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('registrar.view_property', property_id=property.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-file-alt"></i> Review
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">
+                            <i class="fas fa-check-circle text-success"></i> No pending registrations
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if properties.pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if properties.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('registrar.pending_registrations', page=properties.prev_num) }}">Previous</a>
+                </li>
+                {% endif %}
+
+                {% for page_num in properties.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == properties.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('registrar.pending_registrations', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if properties.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('registrar.pending_registrations', page=properties.next_num) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Info Box -->
+<div class="alert alert-info mt-4">
+    <i class="fas fa-info-circle"></i> 
+    <strong>Note:</strong> Properties pending for more than 7 days are highlighted in red. Please review them with priority.
+</div>
+{% endblock %}

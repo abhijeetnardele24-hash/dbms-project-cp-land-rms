@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Home - {{ app_name }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto text-center py-5">
+        <h1 class="display-4 mb-4">Welcome to Land Registry Management System</h1>
+        <p class="lead mb-4">Comprehensive land records management with role-based access control</p>
+        <div class="row my-5">
+            <div class="col-md-3">
+                <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                <h5>Multi-Role System</h5>
+            </div>
+            <div class="col-md-3">
+                <i class="fas fa-home fa-3x text-success mb-3"></i>
+                <h5>Property Management</h5>
+            </div>
+            <div class="col-md-3">
+                <i class="fas fa-exchange-alt fa-3x text-info mb-3"></i>
+                <h5>Mutation Workflow</h5>
+            </div>
+            <div class="col-md-3">
+                <i class="fas fa-rupee-sign fa-3x text-warning mb-3"></i>
+                <h5>Tax & Payments</h5>
+            </div>
+        </div>
+        <div class="mt-4">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg me-2">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-user-plus"></i> Register as Citizen
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

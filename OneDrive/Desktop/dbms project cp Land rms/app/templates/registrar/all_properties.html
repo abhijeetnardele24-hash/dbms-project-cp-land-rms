@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}All Properties - Registrar{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-building"></i> All Properties Management</h2>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="under_review" {% if status == 'under_review' %}selected{% endif %}>Under Review</option>
+                    <option value="approved" {% if status == 'approved' %}selected{% endif %}>Approved</option>
+                    <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Property Type</label>
+                <select name="property_type" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="residential" {% if property_type == 'residential' %}selected{% endif %}>Residential</option>
+                    <option value="commercial" {% if property_type == 'commercial' %}selected{% endif %}>Commercial</option>
+                    <option value="agricultural" {% if property_type == 'agricultural' %}selected{% endif %}>Agricultural</option>
+                    <option value="industrial" {% if property_type == 'industrial' %}selected{% endif %}>Industrial</option>
+                    <option value="institutional" {% if property_type == 'institutional' %}selected{% endif %}>Institutional</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">District</label>
+                <select name="district" class="form-select">
+                    <option value="">All Districts</option>
+                    {% for dist in districts %}
+                    <option value="{{ dist }}" {% if district == dist %}selected{% endif %}>{{ dist }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">Apply Filters</button>
+                <a href="{{ url_for('registrar.all_properties') }}" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Properties Table -->
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="fas fa-list"></i> Properties List ({{ properties.total }} total)</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ULPIN</th>
+                        <th>Location</th>
+                        <th>Type</th>
+                        <th>Area</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for property in properties.items %}
+                    <tr>
+                        <td><strong>{{ property.ulpin or 'Pending' }}</strong></td>
+                        <td>{{ property.village_city }}, {{ property.district }}</td>
+                        <td><span class="badge bg-secondary">{{ property.property_type or 'N/A' }}</span></td>
+                        <td>{{ property.area }} {{ property.area_unit }}</td>
+                        <td>
+                            {% if property.status == 'approved' %}
+                            <span class="badge bg-success">Approved</span>
+                            {% elif property.status == 'pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% elif property.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% elif property.status == 'under_review' %}
+                            <span class="badge bg-info">Under Review</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ property.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ property.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <a href="{{ url_for('registrar.view_property', property_id=property.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">No properties found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if properties.pages > 1 %}
+        <nav aria-label="Properties pagination">
+            <ul class="pagination justify-content-center">
+                {% if properties.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('registrar.all_properties', page=properties.prev_num, status=status, property_type=property_type, district=district) }}">Previous</a>
+                </li>
+                {% endif %}
+
+                {% for page_num in properties.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == properties.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('registrar.all_properties', page=page_num, status=status, property_type=property_type, district=district) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if properties.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('registrar.all_properties', page=properties.next_num, status=status, property_type=property_type, district=district) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

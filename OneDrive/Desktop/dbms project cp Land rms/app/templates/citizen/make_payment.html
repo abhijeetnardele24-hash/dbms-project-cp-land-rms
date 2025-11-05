@@ -1,0 +1,16 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>Make Payment</h2>
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">{{ form.property_id.label }}{{ form.property_id(class="form-control") }}</div>
+            <div class="mb-3">{{ form.payment_type.label }}{{ form.payment_type(class="form-control") }}</div>
+            <div class="mb-3">{{ form.amount.label }}{{ form.amount(class="form-control") }}</div>
+            <div class="mb-3">{{ form.payment_method.label }}{{ form.payment_method(class="form-control") }}</div>
+            <button type="submit" class="btn btn-success">Complete Payment</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
