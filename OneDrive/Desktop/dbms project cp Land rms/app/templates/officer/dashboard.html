@@ -1,31 +1,219 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Officer Dashboard - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.stat-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+.stat-card h5, .stat-card h2 {
+    color: #ffffff !important;
+}
+.recent-item {
+    padding: 15px;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background 0.2s;
+}
+.recent-item:hover {
+    background: #f7fafc;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<h2 class="mb-4"><i class="fas fa-tachometer-alt"></i> Officer Dashboard</h2>
-<div class="row">
-    <div class="col-md-4">
-        <div class="card text-white bg-warning">
-            <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-clock"></i> Pending Mutations</h5>
-                <h2 class="mb-0">{{ pending_mutations }}</h2>
-                <a href="{{ url_for('officer.pending_mutations') }}" class="btn btn-light btn-sm mt-2">View All</a>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-shield"></i> Officer Dashboard</h2>
+    <div>
+        <span class="badge bg-primary">Officer: {{ current_user.full_name }}</span>
+    </div>
+</div>
+
+<!-- Main Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('officer.pending_mutations') }}" class="text-decoration-none">
+            <div class="card stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="text-uppercase mb-1" style="font-weight: 600;">Pending Mutations</h5>
+                            <h2 class="mb-0 fw-bold">{{ pending_mutations }}</h2>
+                            <small class="d-block mt-1" style="opacity: 0.9;">Requires action</small>
+                        </div>
+                        <div class="fs-1" style="opacity: 0.3;">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('officer.under_review_mutations') }}" class="text-decoration-none">
+            <div class="card stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="text-uppercase mb-1" style="font-weight: 600;">Under Review</h5>
+                            <h2 class="mb-0 fw-bold">{{ under_review }}</h2>
+                            <small class="d-block mt-1" style="opacity: 0.9;">In progress</small>
+                        </div>
+                        <div class="fs-1" style="opacity: 0.3;">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('officer.my_approvals') }}" class="text-decoration-none">
+            <div class="card stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="text-uppercase mb-1" style="font-weight: 600;">My Approvals</h5>
+                            <h2 class="mb-0 fw-bold">{{ my_approvals }}</h2>
+                            <small class="d-block mt-1" style="opacity: 0.9;">Total approved</small>
+                        </div>
+                        <div class="fs-1" style="opacity: 0.3;">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('officer.rejected_mutations') }}" class="text-decoration-none">
+            <div class="card stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="text-uppercase mb-1" style="font-weight: 600;">Rejected</h5>
+                            <h2 class="mb-0 fw-bold">{{ rejected_count }}</h2>
+                            <small class="d-block mt-1" style="opacity: 0.9;">Total rejected</small>
+                        </div>
+                        <div class="fs-1" style="opacity: 0.3;">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Recent Mutations & Quick Actions -->
+<div class="row mb-4">
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Recent Mutations</h5>
+                <a href="{{ url_for('officer.pending_mutations') }}" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_mutations %}
+                    {% for mutation in recent_mutations %}
+                    <div class="recent-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">
+                                    <i class="fas fa-file-alt text-primary"></i>
+                                    {{ mutation.mutation_number }}
+                                </h6>
+                                <small class="text-muted">
+                                    Type: {{ mutation.mutation_type|capitalize }} | 
+                                    Property: {{ mutation.property.ulpin if mutation.property else 'N/A' }}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                {% if mutation.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif mutation.status == 'under_review' %}
+                                    <span class="badge bg-info">Under Review</span>
+                                {% elif mutation.status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif mutation.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                                <a href="{{ url_for('officer.view_mutation', mutation_id=mutation.id) }}" 
+                                   class="btn btn-sm btn-outline-primary ms-2">
+                                    <i class="fas fa-eye"></i> Review
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>No recent mutations</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-info">
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+            </div>
             <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-eye"></i> Under Review</h5>
-                <h2 class="mb-0">{{ under_review }}</h2>
+                <a href="{{ url_for('officer.pending_mutations') }}" class="btn btn-outline-primary btn-block mb-2 w-100">
+                    <i class="fas fa-tasks"></i> Review Pending Mutations
+                </a>
+                <a href="{{ url_for('officer.under_review_mutations') }}" class="btn btn-outline-info btn-block mb-2 w-100">
+                    <i class="fas fa-eye"></i> Under Review List
+                </a>
+                <a href="{{ url_for('officer.my_approvals') }}" class="btn btn-outline-success btn-block mb-2 w-100">
+                    <i class="fas fa-history"></i> My Approval History
+                </a>
+                <a href="{{ url_for('officer.rejected_mutations') }}" class="btn btn-outline-danger btn-block mb-2 w-100">
+                    <i class="fas fa-times-circle"></i> Rejected Mutations
+                </a>
+                <a href="{{ url_for('registrar.all_properties') }}" class="btn btn-outline-secondary btn-block w-100">
+                    <i class="fas fa-home"></i> View All Properties
+                </a>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-success">
+        
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Your Authorities</h5>
+            </div>
             <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-check-circle"></i> My Approvals</h5>
-                <h2 class="mb-0">{{ my_approvals }}</h2>
-                <a href="{{ url_for('officer.my_approvals') }}" class="btn btn-light btn-sm mt-2">View History</a>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> Approve Mutations
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> Reject Mutations
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> Request Additional Info
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> View Property Details
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> Generate Certificates
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-check text-success"></i> Access Audit Logs
+                    </li>
+                </ul>
             </div>
         </div>
     </div>

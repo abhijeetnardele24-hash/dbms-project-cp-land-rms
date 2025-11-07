@@ -1,98 +1,314 @@
 {% extends "base.html" %}
+
+{% block title %}All Properties - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .property-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid #007bff;
+        margin-bottom: 15px;
+    }
+    .property-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+    .property-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+    }
+    .property-details {
+        padding: 15px;
+        display: none;
+    }
+    .property-card.expanded .property-details {
+        display: block;
+    }
+    .mutation-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 0.8rem;
+    }
+    .search-bar {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    .stat-box {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+    }
+    .mutation-timeline {
+        border-left: 3px solid #007bff;
+        padding-left: 20px;
+        margin-left: 10px;
+    }
+    .mutation-item {
+        position: relative;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    .mutation-item::before {
+        content: '';
+        position: absolute;
+        left: -28px;
+        top: 20px;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #007bff;
+        border: 3px solid white;
+    }
+    .pagination-info {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<h2>All Properties</h2>
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>ULPIN</th>
-                        <th>LOCATION</th>
-                        <th>TYPE</th>
-                        <th>STATUS</th>
-                        <th style="width: 150px;">ACTIONS</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for property in properties.items %}
-                    <tr>
-                        <td>{{ property.ulpin or 'Pending' }}</td>
-                        <td>{{ property.village_city }}, {{ property.district }}</td>
-                        <td>{{ property.property_type }}</td>
-                        <td><span class="badge bg-info">{{ property.status }}</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#propertyModal{{ property.id }}">
-                                <i class="fas fa-eye"></i> View Details
-                            </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-home"></i> All Properties</h2>
+        <div>
+            <span class="badge bg-primary" style="font-size: 1rem; padding: 10px 15px;">
+                Total: {{ properties.total }} Properties
+            </span>
         </div>
     </div>
+
+    <!-- Search and Filter Section -->
+    <div class="search-bar">
+        <form method="GET" action="{{ url_for('admin.properties') }}" class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label"><i class="fas fa-search"></i> Search</label>
+                <input type="text" name="search" class="form-control" 
+                       placeholder="Search by ULPIN, District, or City..." 
+                       value="{{ request.args.get('search', '') }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label"><i class="fas fa-filter"></i> Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="pending" {{ 'selected' if request.args.get('status') == 'pending' else '' }}>Pending</option>
+                    <option value="approved" {{ 'selected' if request.args.get('status') == 'approved' else '' }}>Approved</option>
+                    <option value="rejected" {{ 'selected' if request.args.get('status') == 'rejected' else '' }}>Rejected</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <a href="{{ url_for('admin.properties') }}" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i> Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Pagination Info -->
+    <div class="pagination-info mb-3">
+        Showing {{ properties.items|length }} properties 
+        ({{ (properties.page - 1) * 50 + 1 }} - {{ (properties.page - 1) * 50 + properties.items|length }} of {{ properties.total }})
+    </div>
+
+    <!-- Properties List -->
+    <div class="properties-container">
+        {% for property in properties.items %}
+        <div class="card property-card" id="property-{{ property.id }}">
+            <div class="property-header" onclick="toggleProperty({{ property.id }})">
+                <div class="row align-items-center">
+                    <div class="col-md-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-building"></i> {{ property.ulpin or 'ULPIN Pending' }}
+                        </h5>
+                    </div>
+                    <div class="col-md-4">
+                        <i class="fas fa-map-marker-alt"></i> 
+                        {{ property.village_city or 'N/A' }}, {{ property.district or 'N/A' }}
+                    </div>
+                    <div class="col-md-2">
+                        <span class="badge bg-light text-dark">{{ property.property_type or 'N/A' }}</span>
+                    </div>
+                    <div class="col-md-2">
+                        <span class="badge bg-{{ 'success' if property.status == 'approved' else ('warning' if property.status == 'pending' else 'danger') }}">
+                            {{ property.status|title }}
+                        </span>
+                    </div>
+                    <div class="col-md-1 text-end">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+                {% if property_mutations[property.id]['count'] > 0 %}
+                <span class="badge bg-warning mutation-badge">
+                    <i class="fas fa-exchange-alt"></i> {{ property_mutations[property.id]['count'] }} Mutation(s)
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="property-details">
+                <div class="row">
+                    <!-- Basic Information -->
+                    <div class="col-md-4 mb-3">
+                        <div class="stat-box">
+                            <h6 class="text-primary"><i class="fas fa-info-circle"></i> Basic Information</h6>
+                            <table class="table table-sm table-borderless">
+                                <tr><td><strong>ULPIN:</strong></td><td>{{ property.ulpin or 'Not Assigned' }}</td></tr>
+                                <tr><td><strong>Type:</strong></td><td>{{ property.property_type or 'N/A' }}</td></tr>
+                                <tr><td><strong>Sub Type:</strong></td><td>{{ property.sub_property_type or 'N/A' }}</td></tr>
+                                <tr><td><strong>Status:</strong></td><td><span class="badge bg-{{ 'success' if property.status == 'approved' else ('warning' if property.status == 'pending' else 'danger') }}">{{ property.status|title }}</span></td></tr>
+                                <tr><td><strong>Registration:</strong></td><td>{{ property.registration_date.strftime('%d-%m-%Y') if property.registration_date else 'N/A' }}</td></tr>
+                                <tr><td><strong>Created:</strong></td><td>{{ property.created_at.strftime('%d-%m-%Y') if property.created_at else 'N/A' }}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Location Details -->
+                    <div class="col-md-4 mb-3">
+                        <div class="stat-box">
+                            <h6 class="text-primary"><i class="fas fa-map-marker-alt"></i> Location</h6>
+                            <table class="table table-sm table-borderless">
+                                <tr><td><strong>State:</strong></td><td>{{ property.state or 'N/A' }}</td></tr>
+                                <tr><td><strong>District:</strong></td><td>{{ property.district or 'N/A' }}</td></tr>
+                                <tr><td><strong>City/Village:</strong></td><td>{{ property.village_city or 'N/A' }}</td></tr>
+                                <tr><td><strong>Locality:</strong></td><td>{{ property.locality or 'N/A' }}</td></tr>
+                                <tr><td><strong>Address:</strong></td><td>{{ property.street_address or 'N/A' }}</td></tr>
+                                <tr><td><strong>Pincode:</strong></td><td>{{ property.pincode or 'N/A' }}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Property Details -->
+                    <div class="col-md-4 mb-3">
+                        <div class="stat-box">
+                            <h6 class="text-primary"><i class="fas fa-ruler-combined"></i> Property Details</h6>
+                            <table class="table table-sm table-borderless">
+                                <tr><td><strong>Survey No:</strong></td><td>{{ property.survey_number or 'N/A' }}</td></tr>
+                                <tr><td><strong>Plot No:</strong></td><td>{{ property.plot_number or 'N/A' }}</td></tr>
+                                <tr><td><strong>Area:</strong></td><td>{{ property.area or 'N/A' }} {{ property.area_unit or '' }}</td></tr>
+                                <tr><td><strong>Market Value:</strong></td><td class="text-success"><strong>₹{{ "{:,.0f}".format(property.market_value) if property.market_value else 'N/A' }}</strong></td></tr>
+                                <tr><td><strong>Disputed:</strong></td><td><span class="badge bg-{{ 'danger' if property.is_disputed else 'success' }}">{{ 'Yes' if property.is_disputed else 'No' }}</span></td></tr>
+                                <tr><td><strong>Mortgaged:</strong></td><td><span class="badge bg-{{ 'warning' if property.is_mortgaged else 'success' }}">{{ 'Yes' if property.is_mortgaged else 'No' }}</span></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mutation History -->
+                {% if property_mutations[property.id]['count'] > 0 %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="stat-box">
+                            <h6 class="text-warning"><i class="fas fa-exchange-alt"></i> Mutation History ({{ property_mutations[property.id]['count'] }} Total)</h6>
+                            <div class="mutation-timeline mt-3">
+                                {% for mutation in property_mutations[property.id]['mutations'] %}
+                                <div class="mutation-item">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <strong>Mutation ID:</strong> {{ mutation.id }}<br>
+                                            <small class="text-muted"><i class="fas fa-calendar"></i> {{ mutation.created_at.strftime('%d-%m-%Y %H:%M') if mutation.created_at else 'N/A' }}</small>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Type:</strong> {{ mutation.mutation_type|title or 'N/A' }}<br>
+                                            <strong>Status:</strong> <span class="badge bg-{{ 'success' if mutation.status == 'approved' else ('warning' if mutation.status == 'pending' else 'danger') }}">{{ mutation.status|title }}</span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>From:</strong> {{ mutation.previous_owners or 'N/A' }}<br>
+                                            <strong>To:</strong> {{ mutation.new_owners or 'N/A' }}
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Fee:</strong> <span class="text-success">₹{{ "{:,.0f}".format(mutation.mutation_fee) if mutation.mutation_fee else 'N/A' }}</span><br>
+                                            <strong>Payment:</strong> <span class="badge bg-{{ 'success' if mutation.payment_status == 'paid' else 'warning' }}">{{ mutation.payment_status|title }}</span><br>
+                                            {% if mutation.approval_date %}
+                                            <small class="text-success"><i class="fas fa-check-circle"></i> Approved: {{ mutation.approval_date.strftime('%d-%m-%Y') }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% if mutation.remarks %}
+                                    <div class="mt-2">
+                                        <small><strong>Remarks:</strong> {{ mutation.remarks }}</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i> No mutation history available for this property.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if properties.pages > 1 %}
+    <nav aria-label="Property pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if properties.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('admin.properties', page=properties.prev_num, status=request.args.get('status', ''), search=request.args.get('search', '')) }}">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for page_num in properties.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <li class="page-item {{ 'active' if page_num == properties.page else '' }}">
+                        <a class="page-link" href="{{ url_for('admin.properties', page=page_num, status=request.args.get('status', ''), search=request.args.get('search', '')) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if properties.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('admin.properties', page=properties.next_num, status=request.args.get('status', ''), search=request.args.get('search', '')) }}">
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 
-<!-- All Modals Outside Table -->
-{% for property in properties.items %}
-<!-- Property Details Modal -->
-<div class="modal fade" id="propertyModal{{ property.id }}" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                <h5 class="modal-title"><i class="fas fa-home"></i> Property Details - {{ property.ulpin or 'Pending' }}</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <h6 class="text-primary"><i class="fas fa-info-circle"></i> Basic Information</h6>
-                        <table class="table table-sm">
-                            <tr><td><strong>ULPIN:</strong></td><td>{{ property.ulpin or 'Not Assigned' }}</td></tr>
-                            <tr><td><strong>Property Type:</strong></td><td>{{ property.property_type or 'N/A' }}</td></tr>
-                            <tr><td><strong>Sub Type:</strong></td><td>{{ property.sub_property_type or 'N/A' }}</td></tr>
-                            <tr><td><strong>Status:</strong></td><td><span class="badge bg-{{ 'success' if property.status == 'approved' else 'warning' }}">{{ property.status }}</span></td></tr>
-                            <tr><td><strong>Registration Date:</strong></td><td>{{ property.registration_date.strftime('%Y-%m-%d') if property.registration_date else 'N/A' }}</td></tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <h6 class="text-primary"><i class="fas fa-map-marker-alt"></i> Location</h6>
-                        <table class="table table-sm">
-                            <tr><td><strong>State:</strong></td><td>{{ property.state or 'N/A' }}</td></tr>
-                            <tr><td><strong>District:</strong></td><td>{{ property.district or 'N/A' }}</td></tr>
-                            <tr><td><strong>Village/City:</strong></td><td>{{ property.village_city or 'N/A' }}</td></tr>
-                            <tr><td><strong>Locality:</strong></td><td>{{ property.locality or 'N/A' }}</td></tr>
-                            <tr><td><strong>Address:</strong></td><td>{{ property.street_address or 'N/A' }}</td></tr>
-                            <tr><td><strong>Pincode:</strong></td><td>{{ property.pincode or 'N/A' }}</td></tr>
-                        </table>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <h6 class="text-primary"><i class="fas fa-ruler-combined"></i> Property Details</h6>
-                        <table class="table table-sm">
-                            <tr><td><strong>Survey Number:</strong></td><td>{{ property.survey_number or 'N/A' }}</td></tr>
-                            <tr><td><strong>Plot Number:</strong></td><td>{{ property.plot_number or 'N/A' }}</td></tr>
-                            <tr><td><strong>Area:</strong></td><td>{{ property.area or 'N/A' }} {{ property.area_unit or '' }}</td></tr>
-                            <tr><td><strong>Market Value:</strong></td><td>₹{{ "{:,.0f}".format(property.market_value) if property.market_value else 'N/A' }}</td></tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <h6 class="text-primary"><i class="fas fa-shield-alt"></i> Status Flags</h6>
-                        <table class="table table-sm">
-                            <tr><td><strong>Disputed:</strong></td><td><span class="badge bg-{{ 'danger' if property.is_disputed else 'success' }}">{{ 'Yes' if property.is_disputed else 'No' }}</span></td></tr>
-                            <tr><td><strong>Mortgaged:</strong></td><td><span class="badge bg-{{ 'warning' if property.is_mortgaged else 'success' }}">{{ 'Yes' if property.is_mortgaged else 'No' }}</span></td></tr>
-                            <tr><td><strong>Property Tax (Annual):</strong></td><td>₹{{ "{:,.0f}".format(property.property_tax_annual) if property.property_tax_annual else 'N/A' }}</td></tr>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-{% endfor %}
+{% block extra_js %}
+<script>
+function toggleProperty(propertyId) {
+    const card = document.getElementById('property-' + propertyId);
+    card.classList.toggle('expanded');
+    
+    // Change chevron icon
+    const chevron = card.querySelector('.fa-chevron-down, .fa-chevron-up');
+    if (chevron) {
+        if (card.classList.contains('expanded')) {
+            chevron.classList.remove('fa-chevron-down');
+            chevron.classList.add('fa-chevron-up');
+        } else {
+            chevron.classList.remove('fa-chevron-up');
+            chevron.classList.add('fa-chevron-down');
+        }
+    }
+}
+</script>
+{% endblock %}
 {% endblock %}

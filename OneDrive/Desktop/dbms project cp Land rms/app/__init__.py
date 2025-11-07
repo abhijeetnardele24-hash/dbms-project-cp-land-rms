@@ -66,7 +66,7 @@ def create_app(config_name='default'):
         return redirect(url_for('auth.login', next=request.url))
     
     # Register blueprints
-    from app.routes import auth, admin, registrar, officer, citizen, api
+    from app.routes import auth, admin, registrar, officer, citizen, api, download
     
     app.register_blueprint(auth.bp)
     app.register_blueprint(admin.bp, url_prefix='/admin')
@@ -74,6 +74,7 @@ def create_app(config_name='default'):
     app.register_blueprint(officer.bp, url_prefix='/officer')
     app.register_blueprint(citizen.bp, url_prefix='/citizen')
     app.register_blueprint(api.bp, url_prefix='/api/v1')
+    app.register_blueprint(download.bp)
     
     # Register main routes
     from app.routes import main

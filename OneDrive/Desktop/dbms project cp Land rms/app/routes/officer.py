@@ -24,15 +24,23 @@ def dashboard():
     # Statistics
     pending_mutations = Mutation.query.filter_by(status='pending').count()
     under_review = Mutation.query.filter_by(status='under_review').count()
-    my_approvals = Mutation.query.filter_by(processed_by=current_user.id).count()
+    my_approvals = Mutation.query.filter_by(
+        processed_by=current_user.id, 
+        status='approved'
+    ).count()
+    rejected_count = Mutation.query.filter_by(
+        processed_by=current_user.id, 
+        status='rejected'
+    ).count()
     
-    # Recent mutations
-    recent_mutations = Mutation.query.order_by(Mutation.created_at.desc()).limit(10).all()
+    # Recent mutations (last 5 for dashboard)
+    recent_mutations = Mutation.query.order_by(Mutation.created_at.desc()).limit(5).all()
     
     return render_template('officer/dashboard.html',
                          pending_mutations=pending_mutations,
                          under_review=under_review,
                          my_approvals=my_approvals,
+                         rejected_count=rejected_count,
                          recent_mutations=recent_mutations)
 
 
@@ -46,7 +54,7 @@ def pending_mutations():
     mutations_pagination = Mutation.query.filter(
         Mutation.status.in_(['pending', 'under_review', 'documents_verified'])
     ).order_by(Mutation.created_at.desc()).paginate(
-        page=page, per_page=10, error_out=False
+        page=page, per_page=50, error_out=False
     )
     
     return render_template('officer/pending_mutations.html', 
@@ -78,6 +86,10 @@ def process_mutation(mutation_id):
             action = form.action.data
             comments = form.officer_comments.data
             
+            # Get email notification settings from form
+            send_email = request.form.get('send_email_notification') == 'on'
+            notification_email = request.form.get('notification_email', '').strip()
+            
             # Set processing date and officer for all actions
             mutation.processing_date = datetime.utcnow()
             mutation.processed_by = current_user.id
@@ -106,6 +118,20 @@ def process_mutation(mutation_id):
                 # Notify requester
                 notify_mutation_status_change(mutation.id, 'approved', mutation.requester_id)
                 
+                # Send email notification if requested
+                if send_email and notification_email:
+                    from app.utils.email_service import EmailService
+                    mutation_data = {
+                        'mutation_number': mutation.mutation_number,
+                        'mutation_type': mutation.mutation_type,
+                        'property_ulpin': mutation.property.ulpin if mutation.property else 'N/A',
+                        'status': 'approved',
+                        'comments': comments
+                    }
+                    email_sent = EmailService.send_mutation_status_email(notification_email, mutation_data)
+                    if email_sent:
+                        flash(f'✉️ Email notification sent to {notification_email}', 'info')
+                
                 flash('Mutation request approved successfully!', 'success')
                 
             elif action == 'reject':
@@ -126,6 +152,20 @@ def process_mutation(mutation_id):
                 
                 # Notify requester
                 notify_mutation_status_change(mutation.id, 'rejected', mutation.requester_id)
+                
+                # Send email notification if requested
+                if send_email and notification_email:
+                    from app.utils.email_service import EmailService
+                    mutation_data = {
+                        'mutation_number': mutation.mutation_number,
+                        'mutation_type': mutation.mutation_type,
+                        'property_ulpin': mutation.property.ulpin if mutation.property else 'N/A',
+                        'status': 'rejected',
+                        'comments': comments
+                    }
+                    email_sent = EmailService.send_mutation_status_email(notification_email, mutation_data)
+                    if email_sent:
+                        flash(f'✉️ Email notification sent to {notification_email}', 'info')
                 
                 flash('Mutation request rejected.', 'warning')
                 
@@ -156,6 +196,41 @@ def process_mutation(mutation_id):
     return redirect(url_for('officer.view_mutation', mutation_id=mutation_id))
 
 
+@bp.route('/under-review')
+@login_required
+@officer_required
+def under_review_mutations():
+    """View mutations that are under review."""
+    page = request.args.get('page', 1, type=int)
+    
+    mutations_pagination = Mutation.query.filter_by(
+        status='under_review'
+    ).order_by(Mutation.created_at.desc()).paginate(
+        page=page, per_page=50, error_out=False
+    )
+    
+    return render_template('officer/under_review_mutations.html', 
+                         mutations=mutations_pagination)
+
+
+@bp.route('/rejected')
+@login_required
+@officer_required
+def rejected_mutations():
+    """View mutations rejected by current officer."""
+    page = request.args.get('page', 1, type=int)
+    
+    mutations_pagination = Mutation.query.filter_by(
+        processed_by=current_user.id,
+        status='rejected'
+    ).order_by(Mutation.rejection_date.desc()).paginate(
+        page=page, per_page=50, error_out=False
+    )
+    
+    return render_template('officer/rejected_mutations.html', 
+                         mutations=mutations_pagination)
+
+
 @bp.route('/my-approvals')
 @login_required
 @officer_required
@@ -166,7 +241,7 @@ def my_approvals():
     mutations_pagination = Mutation.query.filter_by(
         processed_by=current_user.id
     ).order_by(Mutation.approval_date.desc()).paginate(
-        page=page, per_page=10, error_out=False
+        page=page, per_page=50, error_out=False
     )
     
     return render_template('officer/my_approvals.html', 

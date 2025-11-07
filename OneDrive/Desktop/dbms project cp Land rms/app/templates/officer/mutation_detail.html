@@ -255,6 +255,51 @@
                     {{ form.additional_info_required(class="form-control", rows=3, placeholder="Specify what additional information is needed from the applicant...") }}
                     <small class="text-muted">Only required when requesting more information</small>
                 </div>
+                
+                <!-- Email Notification Field -->
+                <div class="mb-4 p-3 border border-primary rounded" style="background: #f0f7ff;">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-envelope"></i> Email Notification (Optional)
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <label for="notification_email" class="form-label">
+                                <i class="fas fa-at"></i> Send Status Update Email To:
+                            </label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="notification_email" 
+                                   name="notification_email" 
+                                   placeholder="example@email.com"
+                                   value="{{ mutation.requester.email if mutation.requester and mutation.requester.email else '' }}">
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle"></i> 
+                                {% if mutation.requester and mutation.requester.email %}
+                                    Pre-filled with requester's email. Change if needed or leave blank to skip.
+                                {% else %}
+                                    Enter email address to send notification or leave blank to skip.
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label d-block">&nbsp;</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="send_email_notification" 
+                                       name="send_email_notification"
+                                       {% if mutation.requester and mutation.requester.email %}checked{% endif %}>
+                                <label class="form-check-label" for="send_email_notification">
+                                    <i class="fas fa-paper-plane"></i> Send Email
+                                </label>
+                            </div>
+                            <small class="text-muted d-block mt-2">
+                                Professional HTML email will be sent
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <a href="{{ url_for('officer.pending_mutations') }}" class="btn btn-secondary me-md-2">
                         <i class="fas fa-arrow-left"></i> Back to List

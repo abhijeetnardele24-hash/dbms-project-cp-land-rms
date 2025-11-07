@@ -1,0 +1,118 @@
+<!-- Email Notification Modal - Reusable Component -->
+<!-- Include this in any page where you want to send email notifications -->
+
+<div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-id" id="emailModalLabel">
+                    <i class="fas fa-envelope"></i> Send Email Notification
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="emailNotificationForm" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" id="email_action" name="action" value="">
+                    <input type="hidden" id="email_entity_id" name="entity_id" value="">
+                    <input type="hidden" id="email_entity_type" name="entity_type" value="">
+                    
+                    <div class="mb-3">
+                        <label for="recipient_email" class="form-label">
+                            <i class="fas fa-at"></i> Recipient Email Address <span class="text-danger">*</span>
+                        </label>
+                        <input type="email" 
+                               class="form-control form-control-lg" 
+                               id="recipient_email" 
+                               name="recipient_email" 
+                               placeholder="e.g., user@example.com" 
+                               required
+                               pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i> Email notification will be sent to this address
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-lightbulb"></i> <strong>Note:</strong> 
+                        <span id="email_message">A professional email will be sent with all details.</span>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-primary" onclick="submitEmailForm()">
+                    <i class="fas fa-paper-plane"></i> Send Email & Continue
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Global function to open email modal
+function openEmailModal(action, entityId, entityType, message) {
+    document.getElementById('email_action').value = action;
+    document.getElementById('email_entity_id').value = entityId;
+    document.getElementById('email_entity_type').value = entityType;
+    document.getElementById('email_message').textContent = message || 'A professional email will be sent with all details.';
+    
+    // Show modal
+    var modal = new bootstrap.Modal(document.getElementById('emailModal'));
+    modal.show();
+}
+
+// Submit form with email
+function submitEmailForm() {
+    var email = document.getElementById('recipient_email').value;
+    
+    if (!email || !validateEmail(email)) {
+        alert('Please enter a valid email address');
+        return;
+    }
+    
+    var form = document.getElementById('emailNotificationForm');
+    var action = document.getElementById('email_action').value;
+    
+    // Set form action based on context
+    if (action === 'approve_mutation') {
+        form.action = '{{ url_for("officer.process_mutation", mutation_id=0) }}'.replace('0', document.getElementById('email_entity_id').value);
+    } else if (action === 'register_property') {
+        form.action = '{{ url_for("citizen.register_property") }}';
+    } else if (action === 'process_payment') {
+        form.action = '{{ url_for("citizen.process_payment", payment_id=0) }}'.replace('0', document.getElementById('email_entity_id').value);
+    }
+    
+    form.submit();
+}
+
+// Email validation
+function validateEmail(email) {
+    var re = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+    return re.test(String(email).toLowerCase());
+}
+
+// Pre-fill email if user email is available
+function prefillUserEmail(email) {
+    if (email) {
+        document.getElementById('recipient_email').value = email;
+    }
+}
+</script>
+
+<style>
+#emailModal .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+#recipient_email:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+#recipient_email:valid {
+    border-color: #28a745;
+}
+</style>

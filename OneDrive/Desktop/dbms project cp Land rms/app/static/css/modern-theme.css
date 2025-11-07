@@ -51,25 +51,29 @@ body {
 
 /* Modern Navigation */
 .navbar {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(5px);
     box-shadow: 0 4px 30px rgba(0,0,0,0.1);
     border: none;
     padding: 1rem 0;
 }
 
 .navbar-brand {
-    font-weight: 800;
-    font-size: 1.8rem;
-    background: var(--primary-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-weight: 700 !important;
+    font-size: 1.4rem !important;
+    color: #ffffff !important;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3) !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    text-rendering: optimizeLegibility !important;
+    letter-spacing: 0.8px !important;
     transition: var(--transition-smooth);
 }
 
 .navbar-brand:hover {
-    transform: scale(1.05);
+    color: #ffffff !important;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.4) !important;
+    transform: scale(1.02);
 }
 
 .nav-link {
@@ -105,13 +109,13 @@ body {
 
 /* Beautiful Cards */
 .card {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.98);
     border: none;
     border-radius: 20px;
     box-shadow: var(--card-shadow);
     transition: var(--transition-smooth);
     overflow: hidden;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(3px);
 }
 
 .card:hover {

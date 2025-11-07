@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}Rejected Mutations - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-times-circle"></i> Rejected Mutations</h2>
+    <a href="{{ url_for('officer.dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+{% if mutations.items %}
+<div class="card shadow-sm">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-ban"></i> Mutations Rejected by You ({{ mutations.total }})
+        </h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Mutation Number</th>
+                    <th>Type</th>
+                    <th>Property ULPIN</th>
+                    <th>Requester</th>
+                    <th>Submitted Date</th>
+                    <th>Rejection Date</th>
+                    <th>Rejection Reason</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mutation in mutations.items %}
+                <tr>
+                    <td>
+                        <strong>{{ mutation.mutation_number }}</strong>
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary">
+                            {{ mutation.mutation_type|capitalize }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if mutation.property %}
+                            <a href="{{ url_for('citizen.property_detail', property_id=mutation.property.id) }}">
+                                {{ mutation.property.ulpin }}
+                            </a>
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if mutation.requester %}
+                            {{ mutation.requester.full_name }}
+                        {% else %}
+                            <span class="text-muted">Unknown</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ mutation.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </td>
+                    <td>
+                        {% if mutation.rejection_date %}
+                            <span class="text-danger fw-bold">
+                                {{ mutation.rejection_date.strftime('%Y-%m-%d %H:%M') }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if mutation.rejection_reason %}
+                            <small class="text-muted">
+                                {{ mutation.rejection_reason[:50] }}{% if mutation.rejection_reason|length > 50 %}...{% endif %}
+                            </small>
+                        {% elif mutation.officer_comments %}
+                            <small class="text-muted">
+                                {{ mutation.officer_comments[:50] }}{% if mutation.officer_comments|length > 50 %}...{% endif %}
+                            </small>
+                        {% else %}
+                            <span class="text-muted">No reason provided</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('officer.view_mutation', mutation_id=mutation.id) }}" 
+                           class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if mutations.pages > 1 %}
+    <div class="card-footer">
+        <nav aria-label="Mutations pagination">
+            <ul class="pagination justify-content-center mb-0">
+                {% if mutations.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('officer.rejected_mutations', page=mutations.prev_num) }}">
+                        Previous
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in mutations.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == mutations.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('officer.rejected_mutations', page=page_num) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if mutations.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('officer.rejected_mutations', page=mutations.next_num) }}">
+                        Next
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Statistics Card -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm border-danger">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Rejection Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div class="p-3">
+                            <i class="fas fa-ban fa-2x text-danger mb-2"></i>
+                            <h3 class="mb-0">{{ mutations.total }}</h3>
+                            <p class="text-muted mb-0">Total Rejections</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center border-start">
+                        <div class="p-3">
+                            <i class="fas fa-calendar fa-2x text-warning mb-2"></i>
+                            <h3 class="mb-0">
+                                {% if mutations.items %}
+                                    {{ mutations.items[0].rejection_date.strftime('%b %Y') if mutations.items[0].rejection_date else 'N/A' }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </h3>
+                            <p class="text-muted mb-0">Last Rejection</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center border-start">
+                        <div class="p-3">
+                            <i class="fas fa-file-alt fa-2x text-info mb-2"></i>
+                            <h3 class="mb-0">{{ mutations.pages }}</h3>
+                            <p class="text-muted mb-0">Total Pages</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="card shadow-sm">
+    <div class="card-body text-center py-5">
+        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+        <h4 class="text-muted">No Rejected Mutations</h4>
+        <p class="text-muted">You haven't rejected any mutations yet. This is a good sign!</p>
+        <a href="{{ url_for('officer.pending_mutations') }}" class="btn btn-primary mt-3">
+            <i class="fas fa-tasks"></i> Review Pending Mutations
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

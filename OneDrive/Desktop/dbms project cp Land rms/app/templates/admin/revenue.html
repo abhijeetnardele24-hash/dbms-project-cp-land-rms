@@ -9,11 +9,49 @@
         padding: 20px;
         margin-bottom: 20px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        transition: transform 0.2s;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
     }
     .stat-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .stat-card::after {
+        content: '\f078';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        font-size: 0.8rem;
+        opacity: 0.6;
+        transition: transform 0.3s;
+    }
+    .stat-card.expanded::after {
+        transform: rotate(180deg);
+    }
+    .stat-details {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255,255,255,0.3);
+    }
+    .stat-card.expanded .stat-details {
+        max-height: 500px;
+    }
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: 0.9rem;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    .detail-item:last-child {
+        border-bottom: none;
     }
     .stat-value {
         font-size: 2rem;
@@ -96,33 +134,99 @@
     <!-- Summary Statistics -->
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="stat-card bg-success text-white">
+            <div class="stat-card bg-success text-white" onclick="toggleDetails(this)">
                 <div class="stat-label">Total Revenue</div>
                 <div class="stat-value">₹{{ "{:,.2f}".format(total_revenue) }}</div>
                 <div><small>Completed Payments</small></div>
+                <div class="stat-details">
+                    {% if revenue_by_type %}
+                        {% for item in revenue_by_type %}
+                        <div class="detail-item">
+                            <span>{{ item[0]|title|replace('_', ' ') }}:</span>
+                            <span><strong>₹{{ "{:,.2f}".format(item[1]) }}</strong> ({{ item[2] }} txns)</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="detail-item">
+                            <span>No data available</span>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="stat-card bg-warning text-white">
+            <div class="stat-card bg-warning text-white" onclick="toggleDetails(this)">
                 <div class="stat-label">Pending Revenue</div>
                 <div class="stat-value">₹{{ "{:,.2f}".format(pending_revenue) }}</div>
                 <div><small>Awaiting Payment</small></div>
+                <div class="stat-details">
+                    <div class="detail-item">
+                        <span>Failed Payments:</span>
+                        <span><strong>₹{{ "{:,.2f}".format(failed_revenue or 0) }}</strong></span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Status:</span>
+                        <span><strong>Pending Collection</strong></span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Collection Rate:</span>
+                        <span><strong>{{ "{:.1f}".format((total_revenue / (total_revenue + pending_revenue) * 100) if (total_revenue + pending_revenue) > 0 else 0) }}%</strong></span>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="stat-card bg-info text-white">
+            <div class="stat-card bg-info text-white" onclick="toggleDetails(this)">
                 <div class="stat-label">Total Transactions</div>
                 <div class="stat-value">{{ total_transactions }}</div>
                 <div><small>Avg: ₹{{ "{:,.2f}".format(avg_transaction) }}</small></div>
+                <div class="stat-details">
+                    {% if revenue_by_method %}
+                        <div class="detail-item">
+                            <span>Payment Methods:</span>
+                            <span><strong>{{ revenue_by_method|length }} types</strong></span>
+                        </div>
+                        {% for method in revenue_by_method[:3] %}
+                        <div class="detail-item">
+                            <span>{{ method[0]|title }}:</span>
+                            <span><strong>{{ method[2] }} txns</strong></span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="detail-item">
+                            <span>No transaction data</span>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="stat-card bg-primary text-white">
+            <div class="stat-card bg-primary text-white" onclick="toggleDetails(this)">
                 <div class="stat-label">Growth Rate</div>
                 <div class="stat-value {{ 'growth-positive' if growth_rate >= 0 else 'growth-negative' }}">
                     {{ "{:+.1f}".format(growth_rate) }}%
                 </div>
                 <div><small>vs Previous Period</small></div>
+                <div class="stat-details">
+                    <div class="detail-item">
+                        <span>Current Period:</span>
+                        <span><strong>₹{{ "{:,.2f}".format(total_revenue) }}</strong></span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Previous Period:</span>
+                        <span><strong>₹{{ "{:,.2f}".format(previous_period_revenue|default(0)) }}</strong></span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Difference:</span>
+                        <span><strong>{{ "+" if growth_rate >= 0 else "" }}₹{{ "{:,.2f}".format(total_revenue - (previous_period_revenue|default(0))) }}</strong></span>
+                    </div>
+                    {% if monthly_revenue and monthly_revenue|length > 0 %}
+                    <div class="detail-item">
+                        <span>Best Month:</span>
+                        <span><strong>{{ monthly_revenue[-1][0] }}</strong></span>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -203,8 +307,9 @@
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="fas fa-building"></i> Top 10 Revenue-Generating Properties</h5>
+                    <span class="badge bg-light text-dark">{{ total_properties_count }} Total Properties</span>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -239,6 +344,47 @@
                             </tbody>
                         </table>
                     </div>
+                    {% if all_properties and all_properties|length > 10 %}
+                    <div class="text-center mt-3">
+                        <button class="btn btn-outline-primary" onclick="toggleAllProperties()" id="viewAllBtn">
+                            <i class="fas fa-list"></i> View All {{ total_properties_count }} Properties
+                        </button>
+                    </div>
+                    <div id="allPropertiesSection" style="display: none; margin-top: 20px;">
+                        <hr>
+                        <h6 class="mb-3"><i class="fas fa-list-ul"></i> All Revenue-Generating Properties</h6>
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-sm table-striped">
+                                <thead class="sticky-top bg-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>ULPIN</th>
+                                        <th>Type</th>
+                                        <th>District</th>
+                                        <th>Locality</th>
+                                        <th>Total Revenue</th>
+                                        <th>Transactions</th>
+                                        <th>Avg</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for property in all_properties %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td><small><strong>{{ property.ulpin }}</strong></small></td>
+                                        <td><small>{{ property.property_type or 'N/A' }}</small></td>
+                                        <td><small>{{ property.district or 'N/A' }}</small></td>
+                                        <td><small>{{ property.locality or 'N/A' }}</small></td>
+                                        <td class="text-success"><small><strong>₹{{ "{:,.2f}".format(property.total_revenue) }}</strong></small></td>
+                                        <td><small><span class="badge bg-info" style="font-size: 0.7rem;">{{ property.payment_count }}</span></small></td>
+                                        <td><small>₹{{ "{:,.2f}".format(property.total_revenue / property.payment_count) }}</small></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -555,6 +701,40 @@
 
     function exportToPDF() {
         alert('PDF export functionality coming soon!');
+    }
+
+    // Toggle card details
+    function toggleDetails(card) {
+        // Prevent event propagation
+        event.stopPropagation();
+        
+        // Toggle expanded class
+        card.classList.toggle('expanded');
+        
+        // Optional: Add smooth scroll animation
+        if (card.classList.contains('expanded')) {
+            setTimeout(() => {
+                card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+    }
+    
+    // Toggle all properties section
+    function toggleAllProperties() {
+        const section = document.getElementById('allPropertiesSection');
+        const btn = document.getElementById('viewAllBtn');
+        
+        if (section.style.display === 'none') {
+            section.style.display = 'block';
+            btn.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Full List';
+            // Smooth scroll to section
+            setTimeout(() => {
+                section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        } else {
+            section.style.display = 'none';
+            btn.innerHTML = '<i class="fas fa-list"></i> View All {{ total_properties_count }} Properties';
+        }
     }
 </script>
 {% endblock %}

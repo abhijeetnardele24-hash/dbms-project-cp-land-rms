@@ -68,7 +68,7 @@ def users():
         query = query.filter_by(role=role)
     
     users_pagination = query.order_by(User.created_at.desc()).paginate(
-        page=page, per_page=10, error_out=False
+        page=page, per_page=50, error_out=False
     )
     
     return render_template('admin/users.html', users=users_pagination)
@@ -193,17 +193,40 @@ def properties():
     """View all properties."""
     page = request.args.get('page', 1, type=int)
     status = request.args.get('status', '')
+    search = request.args.get('search', '')
     
     query = Property.query
     
     if status:
         query = query.filter_by(status=status)
     
+    if search:
+        query = query.filter(
+            db.or_(
+                Property.ulpin.like(f'%{search}%'),
+                Property.district.like(f'%{search}%'),
+                Property.village_city.like(f'%{search}%')
+            )
+        )
+    
+    # Increase per_page to show more properties (50 instead of 10)
     properties_pagination = query.order_by(Property.created_at.desc()).paginate(
-        page=page, per_page=10, error_out=False
+        page=page, per_page=50, error_out=False
     )
     
-    return render_template('admin/properties.html', properties=properties_pagination)
+    # Get mutation counts for each property
+    property_mutations = {}
+    for prop in properties_pagination.items:
+        mutation_count = Mutation.query.filter_by(property_id=prop.id).count()
+        mutations = Mutation.query.filter_by(property_id=prop.id).order_by(Mutation.created_at.desc()).all()
+        property_mutations[prop.id] = {
+            'count': mutation_count,
+            'mutations': mutations
+        }
+    
+    return render_template('admin/properties.html', 
+                         properties=properties_pagination,
+                         property_mutations=property_mutations)
 
 
 @bp.route('/mutations')
@@ -220,7 +243,7 @@ def mutations():
         query = query.filter_by(status=status)
     
     mutations_pagination = query.order_by(Mutation.created_at.desc()).paginate(
-        page=page, per_page=10, error_out=False
+        page=page, per_page=50, error_out=False
     )
     
     return render_template('admin/mutations.html', mutations=mutations_pagination)
@@ -609,6 +632,29 @@ def revenue():
         func.sum(Payment.amount).desc()
     ).limit(10).all()
     
+    # All revenue-generating properties (for detailed view)
+    all_properties = db.session.query(
+        Property.ulpin,
+        Property.district,
+        Property.locality,
+        Property.property_type,
+        func.sum(Payment.amount).label('total_revenue'),
+        func.count(Payment.id).label('payment_count')
+    ).join(
+        Payment, Property.id == Payment.property_id
+    ).filter(
+        Payment.status == 'completed',
+        Payment.payment_date >= start_date,
+        Payment.payment_date <= end_date
+    ).group_by(
+        Property.id, Property.ulpin, Property.district, Property.locality, Property.property_type
+    ).order_by(
+        func.sum(Payment.amount).desc()
+    ).all()
+    
+    # Total properties count
+    total_properties_count = len(all_properties)
+    
     # Revenue by district
     revenue_by_district = db.session.query(
         Property.district,
@@ -669,11 +715,14 @@ def revenue():
                          monthly_revenue=monthly_revenue,
                          daily_revenue=daily_revenue,
                          top_properties=top_properties,
+                         all_properties=all_properties,
+                         total_properties_count=total_properties_count,
                          revenue_by_district=revenue_by_district,
                          avg_transaction=avg_transaction,
                          total_transactions=total_transactions,
                          recent_large_transactions=recent_large_transactions,
                          growth_rate=growth_rate,
+                         previous_period_revenue=previous_revenue,
                          start_date=start_date,
                          end_date=end_date)
 
