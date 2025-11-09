@@ -329,12 +329,16 @@
                                 {% for property in top_properties %}
                                 <tr>
                                     <td>{{ loop.index }}</td>
-                                    <td><strong>{{ property.ulpin }}</strong></td>
-                                    <td>{{ property.district or 'N/A' }}</td>
-                                    <td>{{ property.locality or 'N/A' }}</td>
-                                    <td class="text-success"><strong>₹{{ "{:,.2f}".format(property.total_revenue) }}</strong></td>
-                                    <td><span class="badge bg-info">{{ property.payment_count }}</span></td>
-                                    <td>₹{{ "{:,.2f}".format(property.total_revenue / property.payment_count) }}</td>
+                                    <td>
+                                        <a href="{{ url_for('admin.property_detail', property_id=property[0]) }}" class="text-primary fw-bold" style="text-decoration: none;">
+                                            <i class="fas fa-search"></i> {{ property[1] }}
+                                        </a>
+                                    </td>
+                                    <td>{{ property[2] or 'N/A' }}</td>
+                                    <td>{{ property[3] or 'N/A' }}</td>
+                                    <td class="text-success"><strong>₹{{ "{:,.2f}".format(property[4]) }}</strong></td>
+                                    <td><span class="badge bg-info">{{ property[5] }}</span></td>
+                                    <td>₹{{ "{:,.2f}".format(property[4] / property[5]) }}</td>
                                 </tr>
                                 {% else %}
                                 <tr>
@@ -371,13 +375,19 @@
                                     {% for property in all_properties %}
                                     <tr>
                                         <td>{{ loop.index }}</td>
-                                        <td><small><strong>{{ property.ulpin }}</strong></small></td>
-                                        <td><small>{{ property.property_type or 'N/A' }}</small></td>
-                                        <td><small>{{ property.district or 'N/A' }}</small></td>
-                                        <td><small>{{ property.locality or 'N/A' }}</small></td>
-                                        <td class="text-success"><small><strong>₹{{ "{:,.2f}".format(property.total_revenue) }}</strong></small></td>
-                                        <td><small><span class="badge bg-info" style="font-size: 0.7rem;">{{ property.payment_count }}</span></small></td>
-                                        <td><small>₹{{ "{:,.2f}".format(property.total_revenue / property.payment_count) }}</small></td>
+                                        <td>
+                                            <small>
+                                                <a href="{{ url_for('admin.property_detail', property_id=property[0]) }}" class="text-primary" style="text-decoration: none;">
+                                                    <i class="fas fa-search"></i> <strong>{{ property[1] }}</strong>
+                                                </a>
+                                            </small>
+                                        </td>
+                                        <td><small>{{ property[4] or 'N/A' }}</small></td>
+                                        <td><small>{{ property[2] or 'N/A' }}</small></td>
+                                        <td><small>{{ property[3] or 'N/A' }}</small></td>
+                                        <td class="text-success"><small><strong>₹{{ "{:,.2f}".format(property[5]) }}</strong></small></td>
+                                        <td><small><span class="badge bg-info" style="font-size: 0.7rem;">{{ property[6] }}</span></small></td>
+                                        <td><small>₹{{ "{:,.2f}".format(property[5] / property[6]) }}</small></td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -487,6 +497,38 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Coming Soon Modal -->
+    <div class="modal fade" id="comingSoonModal" tabindex="-1" aria-labelledby="comingSoonModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="modal-title" id="comingSoonModalLabel">
+                        <i class="fas fa-clock"></i> Feature Coming Soon
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-hourglass-half" style="font-size: 4rem; color: #667eea;"></i>
+                    </div>
+                    <h4 class="mb-3" id="featureTitle">Export to Excel</h4>
+                    <p class="text-muted mb-4" id="featureDescription">
+                        This feature is currently under development and will be available soon.
+                        We're working hard to bring you the best experience!
+                    </p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> <strong>Note:</strong> You can currently use the Print option as a temporary workaround.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Close
+                    </button>
                 </div>
             </div>
         </div>
@@ -696,11 +738,19 @@
 
     // Export functions
     function exportToExcel() {
-        alert('Excel export functionality coming soon!');
+        showComingSoonModal('Export to Excel', 'Excel export functionality is currently under development. This will allow you to download the complete revenue report with all data in .xlsx format.');
     }
 
     function exportToPDF() {
-        alert('PDF export functionality coming soon!');
+        showComingSoonModal('Export to PDF', 'PDF export functionality is currently under development. This will allow you to download a professionally formatted revenue report in PDF format.');
+    }
+    
+    // Show coming soon modal
+    function showComingSoonModal(title, description) {
+        document.getElementById('featureTitle').textContent = title;
+        document.getElementById('featureDescription').textContent = description;
+        const modal = new bootstrap.Modal(document.getElementById('comingSoonModal'));
+        modal.show();
     }
 
     // Toggle card details

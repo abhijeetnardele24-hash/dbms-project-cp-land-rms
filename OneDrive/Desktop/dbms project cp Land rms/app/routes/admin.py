@@ -209,7 +209,7 @@ def properties():
             )
         )
     
-    # Increase per_page to show more properties (50 instead of 10)
+    # Set per_page to 50 items per page
     properties_pagination = query.order_by(Property.created_at.desc()).paginate(
         page=page, per_page=50, error_out=False
     )
@@ -227,6 +227,46 @@ def properties():
     return render_template('admin/properties.html', 
                          properties=properties_pagination,
                          property_mutations=property_mutations)
+
+
+@bp.route('/property/<int:property_id>')
+@login_required
+@admin_required
+def property_detail(property_id):
+    """View detailed property information (admin view)."""
+    property_obj = Property.query.get_or_404(property_id)
+    
+    # Get all ownership history
+    from app.models.ownership import Ownership
+    ownership_history = Ownership.query.filter_by(
+        property_id=property_id
+    ).order_by(Ownership.acquisition_date.desc()).all()
+    
+    # Get mutation history
+    mutation_history = Mutation.query.filter_by(
+        property_id=property_id
+    ).order_by(Mutation.created_at.desc()).all()
+    
+    # Get payment history
+    payment_history = Payment.query.filter_by(
+        property_id=property_id
+    ).order_by(Payment.payment_date.desc()).all()
+    
+    # Get documents
+    try:
+        from app.models.document import Document
+        documents = Document.query.filter_by(
+            property_id=property_id
+        ).order_by(Document.uploaded_at.desc()).all()
+    except:
+        documents = []
+    
+    return render_template('admin/property_detail.html', 
+                         property=property_obj,
+                         ownership_history=ownership_history,
+                         mutation_history=mutation_history,
+                         payment_history=payment_history,
+                         documents=documents)
 
 
 @bp.route('/mutations')
@@ -257,7 +297,7 @@ def payments():
     page = request.args.get('page', 1, type=int)
     
     payments_pagination = Payment.query.order_by(Payment.payment_date.desc()).paginate(
-        page=page, per_page=10, error_out=False
+        page=page, per_page=50, error_out=False
     )
     
     return render_template('admin/payments.html', payments=payments_pagination)
@@ -615,6 +655,7 @@ def revenue():
     
     # Top revenue-generating properties
     top_properties = db.session.query(
+        Property.id,
         Property.ulpin,
         Property.district,
         Property.locality,
@@ -634,6 +675,7 @@ def revenue():
     
     # All revenue-generating properties (for detailed view)
     all_properties = db.session.query(
+        Property.id,
         Property.ulpin,
         Property.district,
         Property.locality,
@@ -733,3 +775,129 @@ def revenue():
 def settings():
     """System settings page."""
     return render_template('admin/settings.html')
+
+
+# ============================================
+# EXPORT ROUTES - PDF & Excel
+# ============================================
+
+@bp.route('/export/properties/<format>')
+@login_required
+@admin_required
+def export_properties(format):
+    """Export properties to PDF or Excel."""
+    from flask import make_response, send_file
+    from app.utils.pdf_export import generate_properties_pdf
+    from app.utils.excel_export import generate_properties_excel
+    
+    properties = Property.query.all()
+    
+    if format == 'pdf':
+        pdf_buffer = generate_properties_pdf(properties)
+        response = make_response(pdf_buffer.getvalue())
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename=properties_{datetime.now().strftime("%Y%m%d")}.pdf'
+        return response
+    
+    elif format == 'excel':
+        excel_buffer = generate_properties_excel(properties)
+        response = make_response(excel_buffer.getvalue())
+        response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        response.headers['Content-Disposition'] = f'attachment; filename=properties_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        return response
+    
+    flash('Invalid export format', 'danger')
+    return redirect(url_for('admin.properties'))
+
+
+@bp.route('/export/mutations/<format>')
+@login_required
+@admin_required
+def export_mutations(format):
+    """Export mutations to PDF or Excel."""
+    from flask import make_response
+    from app.utils.pdf_export import generate_mutations_pdf
+    from app.utils.excel_export import generate_mutations_excel
+    
+    mutations = Mutation.query.all()
+    
+    if format == 'pdf':
+        pdf_buffer = generate_mutations_pdf(mutations)
+        response = make_response(pdf_buffer.getvalue())
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename=mutations_{datetime.now().strftime("%Y%m%d")}.pdf'
+        return response
+    
+    elif format == 'excel':
+        excel_buffer = generate_mutations_excel(mutations)
+        response = make_response(excel_buffer.getvalue())
+        response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        response.headers['Content-Disposition'] = f'attachment; filename=mutations_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        return response
+    
+    flash('Invalid export format', 'danger')
+    return redirect(url_for('admin.mutations'))
+
+
+@bp.route('/export/payments/<format>')
+@login_required
+@admin_required
+def export_payments(format):
+    """Export payments to Excel."""
+    from flask import make_response
+    from app.utils.excel_export import generate_payments_excel
+    
+    payments = Payment.query.all()
+    
+    if format == 'excel':
+        excel_buffer = generate_payments_excel(payments)
+        response = make_response(excel_buffer.getvalue())
+        response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        response.headers['Content-Disposition'] = f'attachment; filename=payments_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        return response
+    
+    flash('Invalid export format', 'danger')
+    return redirect(url_for('admin.payments'))
+
+
+@bp.route('/export/users/<format>')
+@login_required
+@admin_required
+def export_users(format):
+    """Export users to Excel."""
+    from flask import make_response
+    from app.utils.excel_export import generate_users_excel
+    
+    users = User.query.all()
+    
+    if format == 'excel':
+        excel_buffer = generate_users_excel(users)
+        response = make_response(excel_buffer.getvalue())
+        response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        response.headers['Content-Disposition'] = f'attachment; filename=users_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        return response
+    
+    flash('Invalid export format', 'danger')
+    return redirect(url_for('admin.users'))
+
+
+@bp.route('/mutation/<int:mutation_id>/certificate/pdf')
+@login_required
+@admin_required
+def download_mutation_certificate(mutation_id):
+    """Download mutation certificate as PDF."""
+    from flask import make_response
+    from app.utils.pdf_export import generate_mutation_certificate_pdf
+    
+    mutation = Mutation.query.get_or_404(mutation_id)
+    
+    if mutation.status != 'approved':
+        flash('Certificate can only be generated for approved mutations', 'warning')
+        return redirect(url_for('admin.mutations'))
+    
+    pdf_buffer = generate_mutation_certificate_pdf(mutation)
+    response = make_response(pdf_buffer.getvalue())
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename=certificate_{mutation.mutation_certificate_number}.pdf'
+    
+    return response

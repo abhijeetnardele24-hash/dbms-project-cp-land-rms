@@ -21,13 +21,22 @@ bp = Blueprint('officer', __name__)
 def dashboard():
     """Officer dashboard."""
     
-    # Statistics
-    pending_mutations = Mutation.query.filter_by(status='pending').count()
+    # Statistics - match the counts shown in pending_mutations page
+    # Pending includes: pending, under_review, and documents_verified statuses
+    pending_mutations = Mutation.query.filter(
+        Mutation.status.in_(['pending', 'under_review', 'documents_verified'])
+    ).count()
+    
+    # Under review count (subset of pending)
     under_review = Mutation.query.filter_by(status='under_review').count()
+    
+    # My approvals - mutations approved by current officer
     my_approvals = Mutation.query.filter_by(
         processed_by=current_user.id, 
         status='approved'
     ).count()
+    
+    # Rejected - mutations rejected by current officer
     rejected_count = Mutation.query.filter_by(
         processed_by=current_user.id, 
         status='rejected'

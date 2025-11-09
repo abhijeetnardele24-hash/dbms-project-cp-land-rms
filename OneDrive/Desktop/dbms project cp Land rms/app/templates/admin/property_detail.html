@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.revenue') }}">Revenue</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Property Details</li>
+                </ol>
+            </nav>
+            <h2><i class="fas fa-home"></i> Property Details - {{ property.ulpin or 'Pending' }}</h2>
+        </div>
+        <div>
+            <a href="{{ url_for('admin.properties') }}" class="btn btn-secondary me-2">
+                <i class="fas fa-list"></i> All Properties
+            </a>
+            <a href="{{ url_for('admin.revenue') }}" class="btn btn-primary">
+                <i class="fas fa-chart-line"></i> Back to Revenue
+            </a>
+        </div>
+    </div>
+    
+    <!-- Property Basic Info -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-info-circle"></i> Property Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">ULPIN:</th>
+                            <td><strong>{{ property.ulpin or 'Pending' }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Property Type:</th>
+                            <td><span class="badge bg-info">{{ property.property_type }}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td><span class="badge bg-{{ 'success' if property.status == 'approved' else 'warning' }}">{{ property.status }}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Survey Number:</th>
+                            <td>{{ property.survey_number or 'N/A' }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">Location:</th>
+                            <td>{{ property.village_city }}, {{ property.district }}</td>
+                        </tr>
+                        <tr>
+                            <th>State:</th>
+                            <td>{{ property.state }}</td>
+                        </tr>
+                        <tr>
+                            <th>Area:</th>
+                            <td><strong>{{ property.area }} {{ property.area_unit }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Registered:</th>
+                            <td>{{ property.created_at.strftime('%d-%m-%Y') if property.created_at else 'N/A' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabs for different sections -->
+    <ul class="nav nav-tabs mb-4" id="propertyTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="ownership-tab" data-bs-toggle="tab" data-bs-target="#ownership" type="button">
+                <i class="fas fa-users"></i> Ownership History
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="mutations-tab" data-bs-toggle="tab" data-bs-target="#mutations" type="button">
+                <i class="fas fa-exchange-alt"></i> Mutations ({{ mutation_history|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button">
+                <i class="fas fa-rupee-sign"></i> Payments ({{ payment_history|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button">
+                <i class="fas fa-file-alt"></i> Documents ({{ documents|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline" type="button">
+                <i class="fas fa-clock"></i> Complete Timeline
+            </button>
+        </li>
+    </ul>
+    
+    <div class="tab-content" id="propertyTabsContent">
+        <!-- Ownership History Tab -->
+        <div class="tab-pane fade show active" id="ownership" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Ownership Chain</h5>
+                </div>
+                <div class="card-body">
+                    {% if ownership_history %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Owner Name</th>
+                                    <th>Ownership Type</th>
+                                    <th>Share %</th>
+                                    <th>Acquisition Date</th>
+                                    <th>End Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for own in ownership_history %}
+                                <tr>
+                                    <td><strong>{{ own.owner.full_name if own.owner else 'N/A' }}</strong></td>
+                                    <td>{{ own.ownership_type }}</td>
+                                    <td>{{ own.ownership_percentage }}%</td>
+                                    <td>{{ own.acquisition_date.strftime('%d-%m-%Y') if own.acquisition_date else 'N/A' }}</td>
+                                    <td>{{ own.end_date.strftime('%d-%m-%Y') if own.end_date else '-' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if own.is_active else 'secondary' }}">
+                                            {{ 'Active' if own.is_active else 'Inactive' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4">No ownership records found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mutations Tab -->
+        <div class="tab-pane fade" id="mutations" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-exchange-alt"></i> Mutation History</h5>
+                </div>
+                <div class="card-body">
+                    {% if mutation_history %}
+                    {% for mutation in mutation_history %}
+                    <div class="card mb-3 border-left-{{ 'success' if mutation.status == 'approved' else 'warning' if mutation.status == 'pending' else 'danger' }}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="card-title">
+                                        <span class="badge bg-info">{{ mutation.mutation_number }}</span>
+                                        {{ mutation.mutation_type|upper }}
+                                    </h6>
+                                    <p class="mb-1"><strong>From:</strong> {{ mutation.previous_owners }}</p>
+                                    <p class="mb-1"><strong>To:</strong> {{ mutation.new_owners }}</p>
+                                    <p class="mb-1 small text-muted">{{ mutation.description }}</p>
+                                    <p class="mb-0 small"><i class="fas fa-calendar"></i> {{ mutation.created_at.strftime('%d-%m-%Y') }}</p>
+                                </div>
+                                <div>
+                                    <span class="badge bg-{{ 'success' if mutation.status == 'approved' else 'warning' if mutation.status == 'pending' else 'danger' }} fs-6">
+                                        {{ mutation.status|upper }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted text-center py-4">No mutation records found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payments Tab -->
+        <div class="tab-pane fade" id="payments" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-rupee-sign"></i> Payment History</h5>
+                </div>
+                <div class="card-body">
+                    {% if payment_history %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Receipt #</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payment_history %}
+                                <tr>
+                                    <td>{{ payment.receipt_number }}</td>
+                                    <td>{{ payment.payment_type }}</td>
+                                    <td class="text-success"><strong>₹{{ "{:,.2f}".format(payment.amount) }}</strong></td>
+                                    <td>{{ payment.payment_date.strftime('%d-%m-%Y') }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if payment.status == 'completed' else 'warning' }}">
+                                            {{ payment.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('citizen.payment_detail', payment_id=payment.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4">No payment records found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Documents Tab -->
+        <div class="tab-pane fade" id="documents" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-file-alt"></i> Property Documents</h5>
+                </div>
+                <div class="card-body">
+                    {% if documents %}
+                    <div class="row">
+                        {% for doc in documents %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-{{ 'file-pdf' if doc.file_type == 'pdf' else 'image' }} text-{{ 'danger' if doc.file_type == 'pdf' else 'primary' }}"></i>
+                                            {{ doc.document_name }}
+                                        </h6>
+                                        {% if doc.is_verified %}
+                                        <span class="badge bg-success"><i class="fas fa-check-circle"></i> Verified</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="small text-muted mb-2">{{ doc.description or 'No description' }}</p>
+                                    <p class="small mb-2">
+                                        <strong>Size:</strong> {{ (doc.file_size / 1024)|round(2) }} KB<br>
+                                        <strong>Uploaded:</strong> {{ doc.uploaded_at.strftime('%d-%m-%Y') }}
+                                    </p>
+                                    <a href="{{ url_for('static', filename='uploads/' + doc.file_name) }}" class="btn btn-sm btn-outline-primary w-100" download>
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4">No documents uploaded yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Complete Timeline Tab -->
+        <div class="tab-pane fade" id="timeline" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-clock"></i> Complete Transaction Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline-container">
+                        <!-- Property Registration -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6><i class="fas fa-plus-circle text-primary"></i> Property Registered</h6>
+                                <p class="mb-1">Property was registered in the system</p>
+                                <small class="text-muted">{{ property.created_at.strftime('%d %B %Y, %H:%M') if property.created_at }}</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Ownership Changes -->
+                        {% for own in ownership_history %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <h6><i class="fas fa-user text-info"></i> Ownership {{ 'Started' if own.is_active else 'Ended' }}</h6>
+                                <p class="mb-1">{{ own.owner.full_name if own.owner else 'Unknown' }} - {{ own.ownership_percentage }}% share</p>
+                                <small class="text-muted">{{ own.acquisition_date.strftime('%d %B %Y') if own.acquisition_date }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <!-- Mutations -->
+                        {% for mutation in mutation_history %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-{{ 'success' if mutation.status == 'approved' else 'warning' }}"></div>
+                            <div class="timeline-content">
+                                <h6><i class="fas fa-exchange-alt text-{{ 'success' if mutation.status == 'approved' else 'warning' }}"></i> Mutation {{ mutation.status|title }}</h6>
+                                <p class="mb-1">{{ mutation.mutation_type|upper }} - {{ mutation.mutation_number }}</p>
+                                <small class="text-muted">{{ mutation.created_at.strftime('%d %B %Y, %H:%M') }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <!-- Payments -->
+                        {% for payment in payment_history[:5] %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6><i class="fas fa-rupee-sign text-success"></i> Payment Received</h6>
+                                <p class="mb-1">₹{{ "{:,.2f}".format(payment.amount) }} - {{ payment.payment_type }}</p>
+                                <small class="text-muted">{{ payment.payment_date.strftime('%d %B %Y, %H:%M') }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-success { border-left: 4px solid #28a745 !important; }
+    .border-left-warning { border-left: 4px solid #ffc107 !important; }
+    .border-left-danger { border-left: 4px solid #dc3545 !important; }
+    
+    .timeline-container {
+        position: relative;
+        padding-left: 40px;
+    }
+    
+    .timeline-container::before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 30px;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -34px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px #dee2e6;
+    }
+    
+    .timeline-content {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}

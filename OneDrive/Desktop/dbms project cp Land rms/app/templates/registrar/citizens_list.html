@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Citizens List - {{ app_name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-users"></i> Registered Citizens</h2>
+    <a href="{{ url_for('registrar.dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Registered</th>
+                        <th>Last Login</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users.items %}
+                    <tr>
+                        <td><strong>{{ user.full_name }}</strong></td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.phone or 'N/A' }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if user.is_active else 'danger' }}">
+                                {{ 'Active' if user.is_active else 'Inactive' }}
+                            </span>
+                        </td>
+                        <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="fas fa-user-slash fa-3x mb-3"></i>
+                            <p>No citizens found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if users.pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {% if not users.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('registrar.citizens_list', page=users.prev_num) if users.has_prev else '#' }}">
+                        Previous
+                    </a>
+                </li>
+                
+                {% for page_num in range(1, users.pages + 1) %}
+                    {% if page_num == users.page %}
+                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                    {% elif page_num == 1 or page_num == users.pages or (page_num >= users.page - 2 and page_num <= users.page + 2) %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('registrar.citizens_list', page=page_num) }}">{{ page_num }}</a>
+                    </li>
+                    {% elif page_num == users.page - 3 or page_num == users.page + 3 %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                
+                <li class="page-item {% if not users.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('registrar.citizens_list', page=users.next_num) if users.has_next else '#' }}">
+                        Next
+                    </a>
+                </li>
+            </ul>
+            <p class="text-center text-muted">
+                Showing {{ users.items|length }} citizens (Page {{ users.page }} of {{ users.pages }}) | Total: {{ users.total }} users
+            </p>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

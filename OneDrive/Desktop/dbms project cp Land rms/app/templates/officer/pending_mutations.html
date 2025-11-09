@@ -8,6 +8,45 @@
         <tr><td>{{ mutation.mutation_number }}</td><td>{{ mutation.mutation_type }}</td><td>{{ mutation.created_at.strftime('%Y-%m-%d') }}</td><td><a href="{{ url_for('officer.view_mutation', mutation_id=mutation.id) }}" class="btn btn-sm btn-primary">Review</a></td></tr>
         {% endfor %}
         </tbody></table>
+        
+        <!-- Pagination Controls -->
+        {% if mutations.pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <!-- Previous Button -->
+                <li class="page-item {% if not mutations.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{% if mutations.has_prev %}{{ url_for('officer.pending_mutations', page=mutations.prev_num) }}{% else %}#{% endif %}">
+                        Previous
+                    </a>
+                </li>
+                
+                <!-- Page Numbers -->
+                {% for page_num in mutations.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == mutations.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('officer.pending_mutations', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                <!-- Next Button -->
+                <li class="page-item {% if not mutations.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{% if mutations.has_next %}{{ url_for('officer.pending_mutations', page=mutations.next_num) }}{% else %}#{% endif %}">
+                        Next
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <!-- Pagination Info -->
+        <div class="text-center text-muted mt-2 mb-3">
+            Showing {{ mutations.items|length }} mutations (Page {{ mutations.page }} of {{ mutations.pages }}) | Total: {{ mutations.total }} pending mutations
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

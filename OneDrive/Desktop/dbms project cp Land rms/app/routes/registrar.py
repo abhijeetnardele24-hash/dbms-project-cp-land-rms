@@ -149,8 +149,9 @@ def process_property(property_id):
                 status='success'
             )
             
-            # Notify property owner (get first owner)
-            owners = property_obj.get_current_owners()
+            # Notify property owner (get first owner) - use no_autoflush to prevent premature flush
+            with db.session.no_autoflush:
+                owners = property_obj.get_current_owners()
             if owners and owners[0].user_id:
                 notify_property_status_change(property_obj.id, 'approved', owners[0].user_id)
             
@@ -171,8 +172,9 @@ def process_property(property_id):
                 status='success'
             )
             
-            # Notify property owner
-            owners = property_obj.get_current_owners()
+            # Notify property owner - use no_autoflush to prevent premature flush
+            with db.session.no_autoflush:
+                owners = property_obj.get_current_owners()
             if owners and owners[0].user_id:
                 notify_property_status_change(property_obj.id, 'rejected', owners[0].user_id)
             
@@ -340,3 +342,65 @@ def reports_summary():
             'pending': pending_mutations,
         }
     })
+
+
+@bp.route('/under-review-properties')
+@login_required
+@registrar_required
+def under_review_properties():
+    """Show properties under review."""
+    page = request.args.get('page', 1, type=int)
+    properties = Property.query.filter_by(status='under_review').order_by(
+        Property.created_at.desc()
+    ).paginate(page=page, per_page=50, error_out=False)
+    
+    return render_template('registrar/property_list.html', 
+                         properties=properties, 
+                         title='Under Review Properties',
+                         status='under_review')
+
+
+@bp.route('/approved-properties')
+@login_required
+@registrar_required
+def approved_properties():
+    """Show approved properties."""
+    page = request.args.get('page', 1, type=int)
+    properties = Property.query.filter_by(status='approved').order_by(
+        Property.created_at.desc()
+    ).paginate(page=page, per_page=50, error_out=False)
+    
+    return render_template('registrar/property_list.html', 
+                         properties=properties, 
+                         title='Approved Properties',
+                         status='approved')
+
+
+@bp.route('/rejected-properties')
+@login_required
+@registrar_required
+def rejected_properties():
+    """Show rejected properties."""
+    page = request.args.get('page', 1, type=int)
+    properties = Property.query.filter_by(status='rejected').order_by(
+        Property.created_at.desc()
+    ).paginate(page=page, per_page=50, error_out=False)
+    
+    return render_template('registrar/property_list.html', 
+                         properties=properties, 
+                         title='Rejected Properties',
+                         status='rejected')
+
+
+@bp.route('/citizens')
+@login_required
+@registrar_required
+def citizens_list():
+    """Show list of all citizens."""
+    page = request.args.get('page', 1, type=int)
+    users = User.query.filter_by(role='citizen').order_by(
+        User.created_at.desc()
+    ).paginate(page=page, per_page=50, error_out=False)
+    
+    return render_template('registrar/citizens_list.html', 
+                         users=users)

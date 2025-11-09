@@ -1,13 +1,91 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block content %}
-<h2>My Approvals</h2>
-<div class="card">
-    <div class="card-body">
-        <table class="table"><thead><tr><th>ULPIN</th><th>Location</th><th>Type</th><th>Approved On</th></tr></thead><tbody>
-        {% for property in properties.items %}
-        <tr><td>{{ property.ulpin }}</td><td>{{ property.village_city }}, {{ property.district }}</td><td>{{ property.property_type }}</td><td>{{ property.approval_date.strftime('%Y-%m-%d') if property.approval_date else 'N/A' }}</td></tr>
-        {% endfor %}
-        </tbody></table>
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="mb-0"><i class="fas fa-check-circle text-success"></i> My Approvals</h2>
+            <p class="text-muted">Properties approved by you</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {% if properties.items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ULPIN</th>
+                            <th>LOCATION</th>
+                            <th>TYPE</th>
+                            <th>APPROVED ON</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for property in properties.items %}
+                        <tr>
+                            <td><strong>{{ property.ulpin or 'Pending' }}</strong></td>
+                            <td>{{ property.village_city }}, {{ property.district }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'primary' if property.property_type == 'residential' else 'info' if property.property_type == 'commercial' else 'success' }}">
+                                    {{ property.property_type }}
+                                </span>
+                            </td>
+                            <td>{{ property.approval_date.strftime('%Y-%m-%d') if property.approval_date else 'N/A' }}</td>
+                            <td>
+                                <a href="{{ url_for('registrar.view_property', property_id=property.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View Details
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if properties.pages > 1 %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if properties.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('registrar.my_approvals', page=properties.prev_num) }}">
+                            Previous
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in properties.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if page_num %}
+                            <li class="page-item {{ 'active' if page_num == properties.page else '' }}">
+                                <a class="page-link" href="{{ url_for('registrar.my_approvals', page=page_num) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if properties.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('registrar.my_approvals', page=properties.next_num) }}">
+                            Next
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted">You haven't approved any properties yet.</p>
+            </div>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

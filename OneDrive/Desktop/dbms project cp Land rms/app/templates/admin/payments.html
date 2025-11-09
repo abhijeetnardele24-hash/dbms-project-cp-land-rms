@@ -8,6 +8,45 @@
         <tr><td>{{ payment.payment_reference }}</td><td>{{ payment.payment_type }}</td><td>₹{{ payment.amount }}</td><td><span class="badge bg-success">{{ payment.status }}</span></td><td>{{ payment.payment_date.strftime('%Y-%m-%d') }}</td></tr>
         {% endfor %}
         </tbody></table>
+        
+        <!-- Pagination Controls -->
+        {% if payments.pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <!-- Previous Button -->
+                <li class="page-item {% if not payments.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{% if payments.has_prev %}{{ url_for('admin.payments', page=payments.prev_num) }}{% else %}#{% endif %}">
+                        Previous
+                    </a>
+                </li>
+                
+                <!-- Page Numbers -->
+                {% for page_num in payments.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == payments.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('admin.payments', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                <!-- Next Button -->
+                <li class="page-item {% if not payments.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{% if payments.has_next %}{{ url_for('admin.payments', page=payments.next_num) }}{% else %}#{% endif %}">
+                        Next
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <!-- Pagination Info -->
+        <div class="text-center text-muted mt-2 mb-3">
+            Showing {{ payments.items|length }} payments (Page {{ payments.page }} of {{ payments.pages }}) | Total: {{ payments.total }} payments
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
